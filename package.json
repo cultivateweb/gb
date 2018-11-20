@@ -1,0 +1,21 @@
+{
+  "name": "gb",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "server": "browser-sync start --config bs-config.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cultivateweb/gb.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/cultivateweb/gb/issues"
+  },
+  "homepage": "https://github.com/cultivateweb/gb#readme"
+}
