@@ -91,21 +91,58 @@
 
 
     // CPU LR35902
-    let PC  = 0x0000
-      , RA  = 0x0001
-      , RB  = 0x0000
-      , RC  = 0x0013
-      , RD  = 0x0000
-      , RE  = 0x00D8
-      , RHL = 0x014D
-      , RSP = 0xFFFE
+//  let    PC  = 0x0000
+    //   , RA  = 0x0001
+    //   , RB  = 0x0000
+    //   , RC  = 0x0013
+    //   , RD  = 0x0000
+    //   , RE  = 0x00D8
+    //   , RHL = 0x014D
+    //   , RSP = 0xFFFE
 
-      , FZ  = 0b0
-      , FN  = 0b0
-      , FH  = 0b0
-      , FC  = 0b0
+    //   , FZ  = 0b0
+    //   , FN  = 0b0
+    //   , FH  = 0b0
+    //   , FC  = 0b0
+
+    // 8-bit register
+    let A = 0x00
+      , B = 0x00
+      , C = 0x00
+      , D = 0x00
+      , E = 0x00
+      , F = 0x00
+      , H = 0x00
+      , L = 0x00
+
+      , AF
+      , BC
+      , DE
+      , HL
+
+    // 16-bit register
+      , PC = 0x0100
+      , SP = 0x0000
     ;
- 
+    // Zero Flag (Z)
+    // Substract Flag (N) 
+    // Half Carry Flag (H)
+    // Carry Flag (С)
+
+    // IME
+
+
+    // let Complement = 0;
+    // for (let i = 0x134; i <= 0x14C; i++) {
+    //     Complement = Complement - ROM[i] - 1; 
+    // }
+    // if (Complement != ROM[0x14D]) {
+    //     //проверка не пройдена 
+    // }
+
+
+    // MMC
+
     // if (foreign.start) PC = foreign.start;
 
 
