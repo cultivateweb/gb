@@ -9,7 +9,9 @@
         return file;
     }
 
-    
+    function loadROM() {
+        
+    }
 
     const file = createFileInput(e => {
         if (file.files.length > 0) {            
