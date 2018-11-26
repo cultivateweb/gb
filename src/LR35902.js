@@ -1,63 +1,18 @@
 
-function initializeAddressSpace() {
-    const ROM_BANK_SIZE = 0x4000, // 16Kb
-          RAM_BANK_SIZE = 0x2000; //  8Kb
-/*
-  память:
-    адресное пространство ограничено 0x10000 байтам
-    Из них только 0x8000 байт отведено на образ игры
-    Обращаясь по адресам 0x4000-0x7FFF, без банков памяти 
-    мы бы попали именно по этому адресу в образе игры.
-    С помощью банков памяти мы можем установить так, 
-    чтобы образ был поделен на банки, а по адресу 0x4000-0x7FFF 
-    был отображен выбранный банк.
-    0x4000-0x7FFF – это виртуальные адреса, которые не обязаны 
-    совпадать с физическими. Физический адрес – это настоящий 
-    адрес, по которому происходит доступ к ячейкам памяти.
-    Задача перевода виртуального адреса в физический лежит 
-    на MBC-контроллере, который находится внутри картриджа. 
 
-    ROM 32Kb 0000-7FFF
-    0000-3FFF ROM bank 0
-    4000-7FFF Switchable ROM bank
-    8000-9FFF Video RAM 8Kb
-    A000-BFFF Switchable RAM bank, External RAM 8Kb
-    C000-DFFF Internal RAM 1, Work RAM 8Kb    
-    E000-FDFF Echo of Internal RAM 1 
-    FE00-FE9F OAM, sprite attribute table
-    FEA0-FEFF not used
-    FF00-FF00 I/O ports
-              --011111 d-pad (3-down 2-up 1-left 1-right)
-              --101111 3-start 2-select 1-b 1-a
-    FF01-FF4B I/O ports
-    FF4C-FF7F not used 
-    FF80-FFFE Internal RAM 2, High RAM
-    FFFF-FFFF IE register, Interrupt enable register, interrapt switch
-*/
+export function initLR35902(addressSpace) {
 
-    switch (addr & 0xF000) {
-        case 0x8000:
-        case 0x9000:
-            //осуществляем операции с видеопамятью
-            break;
-    }
+    // addressSpace.read(address);
+    // addressSpace.write(address, value);
 
     return {
-        read: function(address) {
-            return 0;
-        },
-        write: function(address, byte) {
-
-        },
-        load: function() {
-
-        },
-        save: function() {
-
+        run: function() {
+            ///
         }
     };
-
 }
+
+// 4213440 ticks per second
 
 function initRam(cartridge) {
 
@@ -91,9 +46,9 @@ function initRam(cartridge) {
     }
 }
 
-var RAM = initRAM(ROM);
-var byte = RAM.read(addr);
-RAM.write(addr, byte);
+// var RAM = initRAM(ROM);
+// var byte = RAM.read(addr);
+// RAM.write(addr, byte);
 
 function initCPU(RAM) {
 
@@ -104,8 +59,8 @@ function initCPU(RAM) {
     // 1-bit flags of register F
     let Z = 0; // Zero Flag
     let N = 0; // Subtract Flag
-    let H = 0; // Half Carry Flag
-    let C = 0; // Carry Flag
+    // let H = 0; // Half Carry Flag
+    //let C = 0; // Carry Flag
 
     // 8-bit registers
     let A = 0x00; // Accumulator
@@ -1482,107 +1437,85 @@ function initCPU(RAM) {
     };
 }
 
-let CPU = initCPU(initRAM(ROM));
+// let CPU = initCPU(initRAM(ROM));
 
-CPU(opcode);
+// CPU(opcode);
 
+// const A = 0;
+// const B = 1;
+// const C = 2;
+// const D = 3;
+// const E = 4;
+// const F = 5;
+// const H = 6;
+// const L = 7;
 
+// const PC = 0; // program counter
+// const SP = 1; // stack pointer
 
+// class LR35902 {
+//     constructor() {
+//         // 8-bit registers                     A     B     C     D     E     F     H     L
+//         //this.registers8bit = new Uint8Array([0x00, 0x00, 0x00, 0x00, 0x00,       0x00, 0x00]);
 
+//         // 16-bit registers                      PC      SP
+//         //this.registers16bit = new Uint16Array([0x0100, 0x0000]);
 
+//         // 1-bit flags of register F
+//         this.Z = 0b0; // Zero Flag
+//         this.N = 0b0; // Subtract Flag
+//         this.H = 0b0; // Half Carry Flag
+//         this.C = 0b0; // Carry Flag
 
+//         // 8-bit registers
+//         this.A = 0x00;
+//         this.B = 0x00;
+//         this.C = 0x00;
+//         this.D = 0x00;
+//         this.E = 0x00;
+//         //this.F = 0x00; 
+//         this.H = 0x00;
+//         this.L = 0x00;
 
+//         // 16-bit registers
+//         this.PC = 0x0100;
+//         this.SP = 0x0000;
+//         // this.AF = {A: , F: };
+//         // this.BC = {B: , C: };
+//         // this.DE = {D: , E: };
+//         // this.HL = {H: , L: };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-const A = 0;
-const B = 1;
-const C = 2;
-const D = 3;
-const E = 4;
-const F = 5;
-const H = 6;
-const L = 7;
-
-const PC = 0; // program counter
-const SP = 1; // stack pointer
-
-class LR35902 {
-    constructor() {
-        // 8-bit registers                     A     B     C     D     E     F     H     L
-        //this.registers8bit = new Uint8Array([0x00, 0x00, 0x00, 0x00, 0x00,       0x00, 0x00]);
-
-        // 16-bit registers                      PC      SP
-        //this.registers16bit = new Uint16Array([0x0100, 0x0000]);
-
-        // 1-bit flags of register F
-        this.Z = 0b0; // Zero Flag
-        this.N = 0b0; // Subtract Flag
-        this.H = 0b0; // Half Carry Flag
-        this.C = 0b0; // Carry Flag
-
-        // 8-bit registers
-        this.A = 0x00;
-        this.B = 0x00;
-        this.C = 0x00;
-        this.D = 0x00;
-        this.E = 0x00;
-        //this.F = 0x00; 
-        this.H = 0x00;
-        this.L = 0x00;
-
-        // 16-bit registers
-        this.PC = 0x0100;
-        this.SP = 0x0000;
-        // this.AF = {A: , F: };
-        // this.BC = {B: , C: };
-        // this.DE = {D: , E: };
-        // this.HL = {H: , L: };
-
-        this.IME = 0; // interrupt master enable
+//         this.IME = 0; // interrupt master enable
         
-        //Interrupts
-        //IF (interrupt flags) 
-        //IE (interrupt enable)
-        // Бит 	Прерывание
-        // 4 	Joypad
-        // 3 	Serial I/O transfer complete
-        // 2 	Timer overflow
-        // 1 	LCDC
-        // 0 	V-Blank
+//         //Interrupts
+//         //IF (interrupt flags) 
+//         //IE (interrupt enable)
+//         // Бит 	Прерывание
+//         // 4 	Joypad
+//         // 3 	Serial I/O transfer complete
+//         // 2 	Timer overflow
+//         // 1 	LCDC
+//         // 0 	V-Blank
 
-        //opcode 0xCB
+//         //opcode 0xCB
 
-    }
+//     }
 
-    step() {
+//     step() {
 
-    }
+//     }
 
 
-    read(opcode) {
-        // http://www.pastraiser.com/cpu/gameboy/gameboy_opcodes.html
+//     read(opcode) {
+//         // http://www.pastraiser.com/cpu/gameboy/gameboy_opcodes.html
 
 
             
 
-        //                  |INS reg|← Instruction mnemonic
-        // Length in bytes →|  2 8  |← Duration in cycles
-        //                  |Z N H C|← Flags affected
+//         //                  |INS reg|← Instruction mnemonic
+//         // Length in bytes →|  2 8  |← Duration in cycles
+//         //                  |Z N H C|← Flags affected
 
-    }
+//     }
 
-}
+// }
