@@ -75,7 +75,7 @@ export function initLR35902(addressSpace) {
            case 1: data = RC; break;
            case 2: data = RD; break;
            case 3: data = RE; break;
-           case 4: data = RHL >> 8; break;
+           case 4: data = RHL >>> 8; break;
            case 5: data = RHL & 0xFF; break;
            case 6: data = addressSpace.read(RHL|0)|0; break;
            case 7: data = RA; break;
@@ -88,26 +88,26 @@ export function initLR35902(addressSpace) {
               if((data|0) >= 128){data = ((data << 1) % 256|0) + 1|0; FC = 1;
               }else{data = (data << 1) % 256|0; FC = 0;}
            }else if((op|0) == 1){ // RRC - Rotate right
-              if((data|0) & 1){data = (data >> 1) + 128|0; FC = 1;
-              }else{data = (data >> 1); FC = 0;}
+              if((data|0) & 1){data = (data >>> 1) + 128|0; FC = 1;
+              }else{data = (data >>> 1); FC = 0;}
            }else if((op|0) == 2){ // RL - Rotate left through carry
               if((data|0) >= 128){data = ((data << 1) % 256|0) + FC|0; FC = 1;}
               else{data = ((data << 1) % 256|0) + FC|0; FC = 0;}
            }else if((op|0) == 3){ // RR - Rotate right through carry
-              if((data|0) & 1){data = (data >> 1) + (FC*128|0)|0; FC = 1;}
-              else{data = (data >> 1) + (FC*128|0)|0; FC = 0;}
+              if((data|0) & 1){data = (data >>> 1) + (FC*128|0)|0; FC = 1;}
+              else{data = (data >>> 1) + (FC*128|0)|0; FC = 0;}
            }else if((op|0) == 4){ // SLA - Shift left arithmetic
               if((data|0) >= 128) FC = 1; else FC = 0;
               data = (data << 1) % 256|0;
            }else if((op|0) == 5){ // SRA - Shift right arithmetic
               if((data|0) & 1){FC = 1;}else{FC = 0;}
-              data = (data >> 1) + ((data|0)>=128?128:0)|0;
+              data = (data >>> 1) + ((data|0)>=128?128:0)|0;
            }else if((op|0) == 6){ // SWAP - Exchange low/hi-nibble
               FC = 0;
               data = (((data|0) % 16|0)*16)|0 + ((data|0) / 16|0);
            }else if((op|0) == 7){ // SRL - Shift right logical
               if(data & 1){FC = 1;}else{FC = 0};
-              data = (data >> 1);
+              data = (data >>> 1);
            }
            if((data|0) == 0) FZ = 1; else FZ = 0;
            FN = 0;
