@@ -31,7 +31,23 @@ const BIOS = [
     0xBE, 0x20, 0xFE, 0x23, 0x7D, 0xFE, 0x34, 0x20, 
     0xF5, 0x06, 0x19, 0x78, 0x86, 0x23, 0x05, 0x20, 
     0xFB, 0x86, 0x20, 0xFE, 0x3E, 0x01, 0xE0, 0x50];
+/*
+  прерывания:
+    IF (interrupt flags)
+    IE (interrupt enable)
+    Бит 	Прерывание
+    4 	Joypad
+    3 	Serial I/O transfer complete
+    2 	Timer overflow
+    1 	LCDC
+    0 	V-Blank
 
+
+
+
+    PPU
+
+*/
 export function initGB89(CPU) {
     return {
         run: function() {

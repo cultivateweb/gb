@@ -31,8 +31,8 @@ FF00-FF00 I/O ports
         --011111 d-pad (3-down 2-up 1-left 1-right)
         --101111 3-start 2-select 1-b 1-a
 FF01-FF4B I/O ports
-FF4C-FF7F not used 
-FF80-FFFE Internal RAM 2, High RAM
+FF4C-FF7F not used
+FF80-FFFE Internal RAM 2, High RAM (126 bytes)
 FFFF-FFFF IE register, Interrupt enable register, interrapt switch
 
 this.romBanks = 2*Math.pow(2,this.rom8bit[0x0148]);

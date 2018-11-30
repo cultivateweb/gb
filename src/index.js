@@ -3,23 +3,24 @@ import {initLR35902}      from './LR35902.js';
 import {initAddressSpace} from './gb-address-space.js';
 import {initCartridge}    from './gb-cartridge.js';
 
-fetch(new Request("tetris.gb"))
-    .then(response => response.arrayBuffer())
-    .then(buffer => {
-        let cartridge;
-        initGB89(
-            initLR35902(
-                initAddressSpace(
-                    cartridge = initCartridge(
-                        new Uint8Array(buffer)
-                    )
+function initGB(buffer) {
+    let cartridge;
+    let gb = initGB89(
+        initLR35902(
+            initAddressSpace(
+                cartridge = initCartridge(
+                    new Uint8Array(buffer)
                 )
             )
-        ).run();
-        document.querySelector("h1").innerHTML += " - " + cartridge.title;
-        console.log("loaded: " + cartridge.title);
-    });
+        )
+    );
+    document.querySelector("h1").innerHTML += " - " + cartridge.title;
+    console.log("loaded: " + cartridge.title);
+    return gb;
+}
 
+fetch(new Request("tetris.gb")).then(response => response.arrayBuffer())
+                               .then(buffer   => initGB(buffer).run());
 
 // const pre = document.querySelector("pre");
 
