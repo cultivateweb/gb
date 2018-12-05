@@ -106,33 +106,6 @@ export function initLR35902(addressSpace) {
         return value8bit;
     }
 
-    // const LDS_FROM_8 = [
-    //     function (r){REGISTERS[AF] = word(REGISTERS_8[F](), REGISTERS_8[r]());}, // A
-    //     function (r){REGISTERS[AF] = word(REGISTERS_8[r](), REGISTERS_8[A]());}, // F
-    //     function (r){REGISTERS[BC] = word(REGISTERS_8[C](), REGISTERS_8[r]());}, // B
-    //     function (r){REGISTERS[BC] = word(REGISTERS_8[r](), REGISTERS_8[B]());}, // C
-    //     function (r){REGISTERS[DE] = word(REGISTERS_8[E](), REGISTERS_8[r]());}, // D
-    //     function (r){REGISTERS[DE] = word(REGISTERS_8[r](), REGISTERS_8[D]());}, // E
-    //     function (r){REGISTERS[HL] = word(REGISTERS_8[L](), REGISTERS_8[r]());}, // H
-    //     function (r){REGISTERS[HL] = word(REGISTERS_8[r](), REGISTERS_8[H]());}];// L
-
-    // const LDS_FROM_8 = [
-    //     function (value8){REGISTERS[AF] = word(lo(AF), value8);}, // A
-    //     function (value8){REGISTERS[AF] = word(value8, hi(AF));}, // F
-    //     function (value8){REGISTERS[BC] = word(lo(BC), value8);}, // B
-    //     function (value8){REGISTERS[BC] = word(value8, hi(BC));}, // C
-    //     function (value8){REGISTERS[DE] = word(lo(DE), value8);}, // D
-    //     function (value8){REGISTERS[DE] = word(value8, hi(DE));}, // E
-    //     function (value8){REGISTERS[HL] = word(lo(HL), value8);}, // H
-    //     function (value8){REGISTERS[HL] = word(value8, hi(HL));}];// L
-    
-
-    function ld8fromImmediate(reg8to, value) {}
-    function ld8from$(reg8to, reg16) {  = addressSpace.read(REGISTERS[reg16]); }
-    function ld8from8(reg8to, reg8from) {LDS_FROM_8[reg8to](reg8from);}
-
-    function LD(param1, param2, ld) {ld(param1, param2);}
-
     let stopped = 0;
     function STOP(){ stopped = 1; }
     function resume(){ stopped = 0; }
@@ -162,6 +135,13 @@ export function initLR35902(addressSpace) {
     }
 
     const OPCODES = [
+        /* 0x00 NOP          */ function(){},
+        /* 0x01 LD BC,d16    */ function(){C=addressSpace.read(++PC);B=addressSpace.read(++PC);},
+        /* 0x02 LD (BC),A    */ function(){addressSpace.write(word(B,C),A);},
+        /* 0x03 INC BC       */ function(){let val=word(B,C)+1;B=hi(val);C=lo(val);},
+        /* 0x04 INC B        */ function(){increment(B);},
+        /* 0x05 DEC B        */ function(){decrement(B);},
+        /* 0x06 LD B,d8      */ function(){B=addressSpace.read(++PC);},
 
     ];
 

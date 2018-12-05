@@ -64,39 +64,79 @@
                     break;
                     case "LD":
                         let params = _mnem[1].split(",");
-                        if (params.length == 2 && params[0] != params[1]) {
+                        if (params.length == 2) {// && params[0] != params[1]
                             if (REGISTERS_8_BIT.indexOf(params[0]) != -1) {
                                 if (REGISTERS_8_BIT.indexOf(params[1]) != -1) {
                                     elem = params[0]+"="+params[1]+";";
                                 } else if (REGISTERS_16_BIT.indexOf(params[1].replace("(", "").replace(")", "")) != -1) {
                                     let params1 = params[1].replace("(", "").replace(")", "");
                                     elem = params[0]+"=addressSpace.read(word("+params1[0]+","+params1[1]+"));";
-                                } else if (params[1] == "d8") {    
-                                    elem = params[0]+"=addressSpace.read(++PC);";
+                                } else if (params[1] == "d8") {
+                                    elem = params[0]+"=addressSpace.read(PC+1);";
+                                } else if (params[1] == "(HL+)") {
+                                    elem = "let HL=word(H,L);"+params[0]+"=addressSpace.read(HL++);if(HL>0xFFFF){H=0;L=0;}else{H=hi(HL);L=lo(HL);}";
+                                } else if (params[1] == "(HL-)") {
+                                    elem = "let HL=word(H,L);"+params[0]+"=addressSpace.read(HL--);if(HL<0){H=0xFF;L=0xFF;}else{H=hi(HL);L=lo(HL);}";
+                                } else if (params[1] == "(C)") {
+                                    elem = params[0]+"=addressSpace.read(0xFF00|C);";
+                                } else if (params[1] == "(a16)") {
+                                    elem = params[0]+"=addressSpace.read(word(addressSpace.read(PC+2),addressSpace.read(PC+1)));";
                                 } else {
-                                    /* 0x2A LD A,(HL+)   */
-                                    /* 0x3A LD A,(HL-)   */
-                                    /* 0xF2 LD A,(C)     */
-                                    /* 0xFA LD A,(a16)   */
+                                    elem = "/*none1*/";
                                 }
                             } else if (REGISTERS_8_BIT.indexOf(params[1]) != -1) {
                                 if (REGISTERS_16_BIT.indexOf(params[0].replace("(", "").replace(")", "")) != -1) {
                                     let params1 = params[0].replace("(", "").replace(")", "");
                                     elem = "addressSpace.write(word("+params1[0]+","+params1[1]+"),"+params[1]+");";
+                                } else if (params[0] == "(HL+)") {
+                                    elem = "let HL=word(H,L);addressSpace.write(HL++,"+params[1]+");if(HL>0xFFFF){H=0;L=0;}else{H=hi(HL);L=lo(HL);";
+                                } else if (params[0] == "(HL-)") {
+                                    elem = "let HL=word(H,L);addressSpace.write(HL--,"+params[1]+");if(HL<0){H=0xFF;L=0xFF;}else{H=hi(HL);L=lo(HL);";
+                                } else if (params[0] == "(C)") {
+                                    elem = "addressSpace.write(0xFF00|C,"+params[1]+");";
+                                } else if (params[0] == "(a16)") {
+                                    elem = "addressSpace.write(word(addressSpace.read(PC+2),addressSpace.read(PC+1)),"+params[1]+");";
+                                } else {
+                                    elem = "/*none2*/";
                                 }
-                                /* 0x22 LD (HL+),A   */
-                                /* 0x32 LD (HL-),A   */
-                                /* 0xE2 LD (C),A     */
-                                /* 0xEA LD (a16),A   */
                             } else if (params[1] == "d16") {
-                                elem = _mnem[1][1]+"=addressSpace.read(++PC);"+_mnem[1][0]+"=addressSpace.read(++PC);";
+                                elem = _mnem[1][1]+"=addressSpace.read(PC+1);"+_mnem[1][0]+"=addressSpace.read(PC+2);";
+                            } else if (_mnem[1] == "HL,SP+r8") {                      
+                                elem = "let HL=(SP+addressSpace.read(PC+1));H=hi(HL);L=lo(HL);F=F&FLAG_MASK_UNSET_Z";
+                            //* 0xF8 LD HL,SP+r8  PC=PC+1; HL = add16(SP, signImmediate8()); Z = 0;
+
+                            // var val = 0;
+                            // val = getAddress(PC|0)|0;
+                            // if((val|0) >= 128){
+                            //    return ((val|0) - 256)|0;
+                            // }
+                            // return val|0;
+                            
+                            // function add16(a, b){
+                            //     if (b < 0) b = b + 65536;
+                            //     FN = 0;
+                            //     if (a + b >= 65536) 
+                            //        FC = 1;
+                            //     else 
+                            //        FC = 0;
+                            //     
+                            //     if ((a % 4096) + b % 4096 >= 4096)
+                            //        FH = 1;
+                            //     else 
+                            //        FH = 0;
+                            //     
+                            //     return (a + b) % 65536;
+                            //  }
+                            } else if (_mnem[1] == "SP,HL") {
+                                elem = "SP=word(H,L);";
+                            } else if (_mnem[1] == "(a16),SP") {
+                                elem = "let addr=word(addressSpace.read(PC+2),addressSpace.read(PC+1));addressSpace.write(addr,lo(SP));addressSpace.write(addr+1,hi(SP));";
+                            } else if (_mnem[1] == "(HL),d8") {
+                                elem = "addressSpace.write(word(H,L),addressSpace.read(PC+1));";
+                            } else {
+                                elem = "/*none3*/";
                             }
                         }
-
-                        /* 0xF8 LD HL,SP+r8  */
-                        /* 0xF9 LD SP,HL     */
-                        /* 0x08 LD (a16),SP  */
-                        /* 0x36 LD (HL),d8   */
                     break;
 // d8  means immediate 8 bit data
 // d16 means immediate 16 bit data
@@ -139,12 +179,12 @@
                     // DAA
                     // RRA
                     // RLA
-                    // NOP
                     // RLCA
                     // RRCA
                     // RETI
-                    case "DI":   elem = "IME=false;";   break;                    
-                    case "EI":   elem = "IME=true;interrupt();";   break;                    
+                    case "NOP":  break;                    
+                    case "DI":   elem = "IME=false;";   break;
+                    case "EI":   elem = "IME=true;interrupt();";   break;
                     case "HALT": elem = "if (IME) STOP();"; break;
                     default: elem = mnem + "();";
                 }
