@@ -42,10 +42,10 @@
                             case "E":
                             case "D":
                             case "C":
-                            case "B": elem = "increment("+_mnem[1]+");"; break;
-                            case "(HL)": elem = "addressSpace.write(word(H,L),addressSpace.read(word(H,L))+1);";
+                            case "B": elem = _mnem[1]+"=increment("+_mnem[1]+");"; break;
+                            case "(HL)": elem = "let HL=H<<8|L;addressSpace.write(HL,addressSpace.read(HL)+1);";
                             break;
-                            default: elem = "let val=word("+_mnem[1][0]+","+_mnem[1][1]+")+1;"+_mnem[1][0]+"=hi(val);"+_mnem[1][1]+"=lo(val);";
+                            default: elem = "let val="+_mnem[1][0]+"<<8|"+_mnem[1][1]+"+1;"+_mnem[1][0]+"=val>>>8;"+_mnem[1][1]+"=val&0xFF;";
                         } 
                     break;
                     case "DEC":
@@ -56,10 +56,10 @@
                             case "E":
                             case "D":
                             case "C":
-                            case "B": elem = "decrement("+_mnem[1]+");"; break;
-                            case "(HL)": elem = "addressSpace.write(word(H,L),addressSpace.read(word(H,L))-1);";
+                            case "B": elem = _mnem[1]+"=decrement("+_mnem[1]+");"; break;
+                            case "(HL)": elem = "let HL=H<<8|L;addressSpace.write(HL,addressSpace.read(HL)-1);";
                             break;
-                            default: elem = "let val=word("+_mnem[1][0]+","+_mnem[1][1]+")-1;"+_mnem[1][0]+"=hi(val);"+_mnem[1][1]+"=lo(val);";
+                            default: elem = "let val="+_mnem[1][0]+"<<8|"+_mnem[1][1]+"-1;"+_mnem[1][0]+"=val>>>8;"+_mnem[1][1]+"=val&0xFF;";
                         } 
                     break;
                     case "LD":
@@ -70,44 +70,44 @@
                                     elem = params[0]+"="+params[1]+";";
                                 } else if (REGISTERS_16_BIT.indexOf(params[1].replace("(", "").replace(")", "")) != -1) {
                                     let params1 = params[1].replace("(", "").replace(")", "");
-                                    elem = params[0]+"=addressSpace.read(word("+params1[0]+","+params1[1]+"));";
+                                    elem = params[0]+"=addressSpace.read("+params1[0]+"<<8|"+params1[1]+");";
                                 } else if (params[1] == "d8") {
                                     elem = params[0]+"=addressSpace.read(PC+1);";
                                 } else if (params[1] == "(HL+)") {
-                                    elem = "let HL=word(H,L);"+params[0]+"=addressSpace.read(HL++);if(HL>0xFFFF){H=0;L=0;}else{H=hi(HL);L=lo(HL);}";
+                                    elem = "let HL=H<<8|L;"+params[0]+"=addressSpace.read(HL++);if(HL>0xFFFF){H=0;L=0;}else{H=HL>>>8;L=HL&0xFF;}";
                                 } else if (params[1] == "(HL-)") {
-                                    elem = "let HL=word(H,L);"+params[0]+"=addressSpace.read(HL--);if(HL<0){H=0xFF;L=0xFF;}else{H=hi(HL);L=lo(HL);}";
+                                    elem = "let HL=H<<8|L;"+params[0]+"=addressSpace.read(HL--);if(HL<0){H=0xFF;L=0xFF;}else{H=HL>>>8;L=HL&0xFF;}";
                                 } else if (params[1] == "(C)") {
                                     elem = params[0]+"=addressSpace.read(0xFF00|C);";
                                 } else if (params[1] == "(a16)") {
-                                    elem = params[0]+"=addressSpace.read(word(addressSpace.read(PC+2),addressSpace.read(PC+1)));";
+                                    elem = params[0]+"=addressSpace.read(addressSpace.read(PC+2)<<8|addressSpace.read(PC+1)));";
                                 } else {
                                     elem = "/*none1*/";
                                 }
                             } else if (REGISTERS_8_BIT.indexOf(params[1]) != -1) {
                                 if (REGISTERS_16_BIT.indexOf(params[0].replace("(", "").replace(")", "")) != -1) {
                                     let params1 = params[0].replace("(", "").replace(")", "");
-                                    elem = "addressSpace.write(word("+params1[0]+","+params1[1]+"),"+params[1]+");";
+                                    elem = "addressSpace.write("+params1[0]+"<<8|"+params1[1]+","+params[1]+");";
                                 } else if (params[0] == "(HL+)") {
-                                    elem = "let HL=word(H,L);addressSpace.write(HL++,"+params[1]+");if(HL>0xFFFF){H=0;L=0;}else{H=hi(HL);L=lo(HL);";
+                                    elem = "let HL=H<<8|L;addressSpace.write(HL++,"+params[1]+");if(HL>0xFFFF){H=0;L=0;}else{H=HL>>>8;L=HL&0xFF;";
                                 } else if (params[0] == "(HL-)") {
-                                    elem = "let HL=word(H,L);addressSpace.write(HL--,"+params[1]+");if(HL<0){H=0xFF;L=0xFF;}else{H=hi(HL);L=lo(HL);";
+                                    elem = "let HL=H<<8|L;addressSpace.write(HL--,"+params[1]+");if(HL<0){H=0xFF;L=0xFF;}else{H=HL>>>8;L=HL&0xFF;";
                                 } else if (params[0] == "(C)") {
                                     elem = "addressSpace.write(0xFF00|C,"+params[1]+");";
                                 } else if (params[0] == "(a16)") {
-                                    elem = "addressSpace.write(word(addressSpace.read(PC+2),addressSpace.read(PC+1)),"+params[1]+");";
+                                    elem = "addressSpace.write(addressSpace.read(PC+2)<<8|addressSpace.read(PC+1),"+params[1]+");";
                                 } else {
                                     elem = "/*none2*/";
                                 }
                             } else if (params[1] == "d16") {
                                 elem = _mnem[1][1]+"=addressSpace.read(PC+1);"+_mnem[1][0]+"=addressSpace.read(PC+2);";
                             } else if (_mnem[1] == "HL,SP+r8") {                      
-                                elem = "let HL=(SP+addressSpace.read(PC+1));H=hi(HL);L=lo(HL);F=F&FLAG_MASK_UNSET_Z";
+                                elem = "let data=addressSpace.read(PC+1); data=data<128?data:(data-256); let HL=(SP+);H=HL>>>8;L=HL&0xFF;F=F&0b01110000";
                             //* 0xF8 LD HL,SP+r8  PC=PC+1; HL = add16(SP, signImmediate8()); Z = 0;
 
                             // var val = 0;
                             // val = getAddress(PC|0)|0;
-                            // if((val|0) >= 128){
+                            // if(val >= 128){
                             //    return ((val|0) - 256)|0;
                             // }
                             // return val|0;
@@ -128,11 +128,11 @@
                             //     return (a + b) % 65536;
                             //  }
                             } else if (_mnem[1] == "SP,HL") {
-                                elem = "SP=word(H,L);";
+                                elem = "SP=H<<8|L;";
                             } else if (_mnem[1] == "(a16),SP") {
-                                elem = "let addr=word(addressSpace.read(PC+2),addressSpace.read(PC+1));addressSpace.write(addr,lo(SP));addressSpace.write(addr+1,hi(SP));";
+                                elem = "let addr=addressSpace.read(PC+2)<<8|addressSpace.read(PC+1);addressSpace.write(addr,SP&0xFF);addressSpace.write(addr+1,SP>>>8);";
                             } else if (_mnem[1] == "(HL),d8") {
-                                elem = "addressSpace.write(word(H,L),addressSpace.read(PC+1));";
+                                elem = "addressSpace.write(H<<8|L,addressSpace.read(PC+1));";
                             } else {
                                 elem = "/*none3*/";
                             }
@@ -195,9 +195,7 @@
     }
 
     function parseRow(tr, r) { 
-        return cols(tr).reduce((arr, td, c) => 
-                                  parseCol(r, c, arr, td.childNodes), 
-                               []); 
+        return cols(tr).reduce( (arr, td, c) => parseCol(r, c, arr, td.childNodes), [] );
     }
 
     let rows = document.querySelectorAll("table")[0]
@@ -205,70 +203,9 @@
 
     document.querySelector("pre").innerHTML = 
         Array.from(rows)
-             .reduce((arr, tr, r) => arr.concat( parseRow(tr, r) ), 
-                     [])
+             .reduce( (arr, tr, r) => arr.concat(parseRow(tr, r)), [] )
              .toString();
 })();
-
-
-// (()=>{
-//     const A = 0;
-//     const F = 1;
-//     const B = 2;
-//     const C = 3;
-//     const D = 4;
-//     const E = 5;
-//     const H = 6;
-//     const L = 7;
-    
-//     const AF = 0; //accumulator+flag registers
-//     const BC = 1;
-//     const DE = 2;
-//     const HL = 3;
-//     const PC = 4; // program counter 
-//     const SP = 5; // stack pointer
-    
-//     // const d16 = 6;
-    
-//     // flag masks of register F [Z N H C 0 0 0 0]
-//     const FLAG_MASK_SET_Z = 0b10000000; // Zero Flag
-//     const FLAG_MASK_SET_N = 0b01000000; // Subtract Flag
-//     const FLAG_MASK_SET_H = 0b00100000; // Half Carry Flag
-//     const FLAG_MASK_SET_C = 0b00010000; // Carry Flag
-    
-//     const FLAG_MASK_UNSET_Z = 0b01110000;
-//     const FLAG_MASK_UNSET_N = 0b10110000;
-//     const FLAG_MASK_UNSET_H = 0b11010000;
-//     const FLAG_MASK_UNSET_C = 0b11100000;
-    
-//         const REGISTERS = new Uint16Array([0x0100, 0x0013, 0x00D8, 0x014D, 0x0100, 0xFFFE]);
-    
-//         function word(lo, hi) { return hi << 8 | lo; }
-    
-//         function hi(word) { return word >>> 8; }
-//         function lo(word) { return word & 0xFF; }
-    
-//         function increment(value8bit) {
-//             let F = lo(REGISTERS[AF]);
-//             let flagN = false, flagH = false, flagZ = (F & FLAG_MASK_SET_Z) == FLAG_MASK_SET_Z;
-//             if (value8bit > 254) {
-//                 flagN = flagH = true;
-//                 value8bit = 0;
-//             } else {
-//                 flagZ = false;
-//                 if (value8bit % 16 == 15) flagH = true;
-//                 value8bit = value8bit + 1;
-//             }
-//             F = flagZ ? (F | FLAG_MASK_SET_Z) : (F & FLAG_MASK_UNSET_Z);
-//             F = flagN ? (F | FLAG_MASK_SET_N) : (F & FLAG_MASK_UNSET_N);
-//             F = flagH ? (F | FLAG_MASK_SET_H) : (F & FLAG_MASK_UNSET_H);
-//             REGISTERS[AF] = word(F, hi(REGISTERS[AF]));
-//             return value8bit;
-//         }
-//     REGISTERS.forEach((e, i)=>console.log(i, e.toString(2)));
-//     console.log(increment(255));
-//     REGISTERS.forEach((e, i)=>console.log(i, e.toString(2)));
-// })();
 
 // (()=>{
 //     let legend = Array.from(document.querySelectorAll("body>table:nth-child(13)>tbody:nth-child(1)>tr:nth-child(1)>td:nth-child(1)>table:nth-child(1) tr"))
