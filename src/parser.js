@@ -215,7 +215,7 @@
                                 elem = _mnem[1][1]+"=addressSpace.read(PC+1);"+_mnem[1][0]+"=addressSpace.read(PC+2);";
                             } else if (_mnem[1] == "HL,SP+r8") {                      
                                 /* 0xF8 LD HL,SP+r8 */
-                                elem = "let data=addressSpace.read(PC+1);data=data<0x80?data:(data-0x0100);if(data<0)data=data+0x010000;F=F&0xB0;F=(+(SP+data>0xFFFF)<<4)|F&0xEF;F=(+((SP%0x1000)+data%0x1000>0x0FFF)<<5)|F&0xDF;let HL=(SP+data)%0x010000;H=HL>>>8;L=HL&0xFF;F=F&0x70";
+                                elem = "let data=addressSpace.read(PC+1);data=data<0x80?data:(data-0x0100);if(data<0)data=data+0x010000;F=F&0xB0;F=((SP+data>0xFFFF)<<4)|F&0xEF;F=(((SP%0x1000)+data%0x1000>0x0FFF)<<5)|F&0xDF;let HL=(SP+data)%0x010000;H=HL>>>8;L=HL&0xFF;F=F&0x70";
                             } else if (_mnem[1] == "SP,HL") {
                                 /* 0xF9 LD SP,HL */
                                 elem = "SP=H<<8|L;";
@@ -239,13 +239,13 @@
                                     /* 0x84 ADD A,H */
                                     /* 0x85 ADD A,L */
                                     /* 0x87 ADD A,A */
-                                    elem = "let v="+params[1]+";let s=A+v;F=+!(s%0x0100)<<7|+(A%0x10+v%0x10>0x0F)<<5|+(s>0xFF)<<4;A=s%0x0100;";
+                                    elem = "let v="+params[1]+";let s=A+v;F=!(s%0x0100)<<7|(A%0x10+v%0x10>0x0F)<<5|(s>0xFF)<<4;A=s%0x0100;";
                                 } else if (params[1] == "(HL)") {
                                     /* 0x86 ADD A,(HL) */
-                                    elem = "let v=addressSpace.read(H<<8|L);let s=A+v;F=+!(s%0x0100)<<7|+(A%0x10+v%0x10>0x0F)<<5|+(s>0xFF)<<4;A=s%0x0100;";
+                                    elem = "let v=addressSpace.read(H<<8|L);let s=A+v;F=!(s%0x0100)<<7|(A%0x10+v%0x10>0x0F)<<5|(s>0xFF)<<4;A=s%0x0100;";
                                 } else if (params[1] == "d8") {
                                     /* 0xC6 ADD A,d8 */
-                                    elem = "let v=addressSpace.read(PC+1);let s=A+v;F=+!(s%0x0100)<<7|+(A%0x10+v%0x10>0x0F)<<5|+(s>0xFF)<<4;A=s%0x0100;";
+                                    elem = "let v=addressSpace.read(PC+1);let s=A+v;F=!(s%0x0100)<<7|(A%0x10+v%0x10>0x0F)<<5|(s>0xFF)<<4;A=s%0x0100;";
                                 }                                
                             } else if (REGISTERS_16_BIT.indexOf(params[0]) != -1) {
                                 if (REGISTERS_16_BIT.indexOf(params[1]) != -1) {
@@ -253,10 +253,10 @@
                                     /* 0x19 ADD HL,DE */
                                     /* 0x29 ADD HL,HL */
                                     /* 0x39 ADD HL,SP */
-                                    elem = "let "+params[0]+"="+params[0][0]+"<<8|"+params[0][1]+";let "+params[1]+"="+params[1][0]+"<<8|"+params[1][1]+";if("+params[1]+"<0)"+params[1]+"="+params[1]+"+0x010000;F=F&0xB0;F=(+("+params[0]+"+"+params[1]+">0xFFFF)<<4)|F&0xEF;F=(+(("+params[0]+"%0x1000)+"+params[1]+"%0x1000>0x0FFF)<<5)|F&0xDF;"+params[0]+"=("+params[0]+"+"+params[1]+")%0x010000;"+params[0][0]+"="+params[0]+">>>8;"+params[0][1]+"="+params[0]+"&0xFF;F=F&0x70";
+                                    elem = "let "+params[0]+"="+params[0][0]+"<<8|"+params[0][1]+";let "+params[1]+"="+params[1][0]+"<<8|"+params[1][1]+";if("+params[1]+"<0)"+params[1]+"="+params[1]+"+0x010000;F=F&0xB0;F=(("+params[0]+"+"+params[1]+">0xFFFF)<<4)|F&0xEF;F=((("+params[0]+"%0x1000)+"+params[1]+"%0x1000>0x0FFF)<<5)|F&0xDF;"+params[0]+"=("+params[0]+"+"+params[1]+")%0x010000;"+params[0][0]+"="+params[0]+">>>8;"+params[0][1]+"="+params[0]+"&0xFF;F=F&0x70";
                                 } else if (params[1] == "r8") {
                                     /* 0xE8 ADD SP,r8 */
-                                    elem = "let data=addressSpace.read(PC+1);data=data<0x80?data:(data-0x0100);if(data<0)data=data+0x010000;F=F&0xB0;F=(+(SP+data>0xFFFF)<<4)|F&0xEF;F=(+((SP%0x1000)+data%0x1000>0x0FFF)<<5)|F&0xDF;SP=(SP+data)%0x010000;F=F&0x70";
+                                    elem = "let data=addressSpace.read(PC+1);data=data<0x80?data:(data-0x0100);if(data<0)data=data+0x010000;F=F&0xB0;F=((SP+data>0xFFFF)<<4)|F&0xEF;F=(((SP%0x1000)+data%0x1000>0x0FFF)<<5)|F&0xDF;SP=(SP+data)%0x010000;F=F&0x70";
                                 }
                             }
                         }
@@ -270,13 +270,13 @@
                             /* 0x8C ADC A,H */
                             /* 0x8D ADC A,L */
                             /* 0x8F ADC A,A */
-                            elem = "let v="+params[1]+"+(F>>4&0b00000001);let s=A+v;F=+!(s%0x0100)<<7|+(A%0x10+v%0x10>0x0F)<<5|+(s>0xFF)<<4;A=s%0x0100;";
+                            elem = "let v="+params[1]+"+(F>>4&0b00000001);let s=A+v;F=!(s%0x0100)<<7|(A%0x10+v%0x10>0x0F)<<5|(s>0xFF)<<4;A=s%0x0100;";
                         } else if (params[1] == "(HL)") {
                             /* 0x8E ADC A,(HL) */
-                            elem = "let v=addressSpace.read(H<<8|L)+(F>>4&0b00000001);let s=A+v;F=+!(s%0x0100)<<7|+(A%0x10+v%0x10>0x0F)<<5|+(s>0xFF)<<4;A=s%0x0100;";
+                            elem = "let v=addressSpace.read(H<<8|L)+(F>>4&0b00000001);let s=A+v;F=!(s%0x0100)<<7|(A%0x10+v%0x10>0x0F)<<5|(s>0xFF)<<4;A=s%0x0100;";
                         } else if (params[1] == "d8") {
                             /* 0xCE ADC A,d8 */
-                            elem = "let v=addressSpace.read(PC+1)+(F>>4&0b00000001);let s=A+v;F=+!(s%0x0100)<<7|+(A%0x10+v%0x10>0x0F)<<5|+(s>0xFF)<<4;A=s%0x0100;";
+                            elem = "let v=addressSpace.read(PC+1)+(F>>4&0b00000001);let s=A+v;F=!(s%0x0100)<<7|(A%0x10+v%0x10>0x0F)<<5|(s>0xFF)<<4;A=s%0x0100;";
                         }
                     break;    
                     case "SUB":
@@ -288,13 +288,13 @@
                             /* 0x94 SUB H */
                             /* 0x95 SUB L */
                             /* 0x97 SUB A */
-                            elem = "let v="+_mnem[1]+";let diff=A-v;F=+!diff<<7|0b01000000|+(A%16-v%16<0)<<5|+(diff<0)<<4;A=(diff+0x0100)%0x0100;";
+                            elem = "let v="+_mnem[1]+";let diff=A-v;F=!diff<<7|0b01000000|(A%16-v%16<0)<<5|(diff<0)<<4;A=(diff+0x0100)%0x0100;";
                         } else if (_mnem[1] == "(HL)") {
                             /* 0x96 SUB (HL) */
-                            elem = "let v=addressSpace.read(H<<8|L);let diff=A-v;F=+!diff<<7|0b01000000|+(A%16-v%16<0)<<5|+(diff<0)<<4;A=(diff+0x0100)%0x0100;";
+                            elem = "let v=addressSpace.read(H<<8|L);let diff=A-v;F=!diff<<7|0b01000000|(A%16-v%16<0)<<5|(diff<0)<<4;A=(diff+0x0100)%0x0100;";
                         } else if (_mnem[1] == "d8") {
                             /* 0xD6 SUB d8 */
-                            elem = "let v=addressSpace.read(PC+1);let diff=A-v;F=+!diff<<7|0b01000000|+(A%16-v%16<0)<<5|+(diff<0)<<4;A=(diff+0x0100)%0x0100;";
+                            elem = "let v=addressSpace.read(PC+1);let diff=A-v;F=!diff<<7|0b01000000|(A%16-v%16<0)<<5|(diff<0)<<4;A=(diff+0x0100)%0x0100;";
                         }
                     break;    
                     case "SBC":    
@@ -306,13 +306,13 @@
                             /* 0x9C SBC A,H */
                             /* 0x9D SBC A,L */
                             /* 0x9F SBC A,A */
-                            elem = "let v="+params[1]+"+(F>>4&0b00000001);let diff=A-v;F=+!diff<<7|0b01000000|+(A%16-v%16<0)<<5|+(diff<0)<<4;A=(diff+0x0100)%0x0100;";
+                            elem = "let v="+params[1]+"+(F>>4&0b00000001);let diff=A-v;F=!diff<<7|0b01000000|(A%16-v%16<0)<<5|(diff<0)<<4;A=(diff+0x0100)%0x0100;";
                         } else if (params[0] == "(HL)") {
                             /* 0x9E SBC A,(HL) */
-                            elem = "let v=addressSpace.read(H<<8|L)+(F>>4&0b00000001);let diff=A-v;F=+!diff<<7|0b01000000|+(A%16-v%16<0)<<5|+(diff<0)<<4;A=(diff+0x0100)%0x0100;";
+                            elem = "let v=addressSpace.read(H<<8|L)+(F>>4&0b00000001);let diff=A-v;F=!diff<<7|0b01000000|(A%16-v%16<0)<<5|(diff<0)<<4;A=(diff+0x0100)%0x0100;";
                         } else if (params[0] == "d8") {
                             /* 0xDE SBC A,d8 */   
-                            elem = "let v=addressSpace.read(PC+1)+(F>>4&0b00000001);let diff=A-v;F=+!diff<<7|0b01000000|+(A%16-v%16<0)<<5|+(diff<0)<<4;A=(diff+0x0100)%0x0100;";
+                            elem = "let v=addressSpace.read(PC+1)+(F>>4&0b00000001);let diff=A-v;F=!diff<<7|0b01000000|(A%16-v%16<0)<<5|(diff<0)<<4;A=(diff+0x0100)%0x0100;";
                         }
                     break;    
                     case "AND":    
@@ -324,13 +324,13 @@
                             /* 0xA4 AND H */
                             /* 0xA5 AND L */
                             /* 0xA7 AND A */
-                            elem = "A=A&"+_mnem[1]+";F=+!A<<7|0b00100000;";
+                            elem = "A=A&"+_mnem[1]+";F=!A<<7|0b00100000;";
                         } else if (_mnem[1] == "(HL)") {
                             /* 0xA6 AND (HL) */
-                            elem = "A=A&addressSpace.read(H<<8|L);F=+!A<<7|0b00100000;";
+                            elem = "A=A&addressSpace.read(H<<8|L);F=!A<<7|0b00100000;";
                         } else if (_mnem[1] == "d8") {
                             /* 0xE6 AND d8 */                    
-                            elem = "A=A&addressSpace.read(PC+1);F=+!A<<7|0b00100000;";
+                            elem = "A=A&addressSpace.read(PC+1);F=!A<<7|0b00100000;";
                         }
                     break;    
                     case "XOR":    
@@ -342,13 +342,13 @@
                             /* 0xAC XOR H */
                             /* 0xAD XOR L */
                             /* 0xAF XOR A */
-                            elem = "A=A^"+_mnem[1]+";F=+!A<<7;";
+                            elem = "A=A^"+_mnem[1]+";F=!A<<7;";
                         } else if (_mnem[1] == "(HL)") {
                             /* 0xAE XOR (HL) */
-                            elem = "A=A^addressSpace.read(H<<8|L);F=+!A<<7;";
+                            elem = "A=A^addressSpace.read(H<<8|L);F=!A<<7;";
                         } else if (_mnem[1] == "d8") {
                             /* 0xEE XOR d8 */                    
-                            elem = "A=A^addressSpace.read(PC+1);F=+!A<<7;";
+                            elem = "A=A^addressSpace.read(PC+1);F=!A<<7;";
                         }
                     break;    
                     case "OR":     
@@ -360,13 +360,13 @@
                             /* 0xB4 OR H */
                             /* 0xB5 OR L */
                             /* 0xB7 OR A */
-                            elem = "A=A|"+_mnem[1]+";F=+!A<<7;";
+                            elem = "A=A|"+_mnem[1]+";F=!A<<7;";
                         } else if (_mnem[1] == "(HL)") {
                             /* 0xB6 OR (HL) */
-                            elem = "A=A|addressSpace.read(H<<8|L);F=+!A<<7;";
+                            elem = "A=A|addressSpace.read(H<<8|L);F=!A<<7;";
                         } else if (_mnem[1] == "d8") {
                             /* 0xF6 OR d8 */                    
-                            elem = "A=A|addressSpace.read(PC+1);F=+!A<<7;";
+                            elem = "A=A|addressSpace.read(PC+1);F=!A<<7;";
                         }
                     break;   
                     case "CP":     
@@ -378,13 +378,13 @@
                             /* 0xBC CP H */
                             /* 0xBD CP L */
                             /* 0xBF CP A */
-                            elem = "let v="+_mnem[1]+";let diff=A-v;F=+!diff<<7|0b01000000|+(A%16-v%16<0)<<5|+(diff<0)<<4;";
+                            elem = "let v="+_mnem[1]+";let diff=A-v;F=!diff<<7|0b01000000|(A%16-v%16<0)<<5|(diff<0)<<4;";
                         } else if (_mnem[1] == "(HL)") {
                             /* 0xBE CP (HL) */
-                            elem = "let v=addressSpace.read(H<<8|L);let diff=A-v;F=+!diff<<7|0b01000000|+(A%16-v%16<0)<<5|+(diff<0)<<4;";
+                            elem = "let v=addressSpace.read(H<<8|L);let diff=A-v;F=!diff<<7|0b01000000|(A%16-v%16<0)<<5|(diff<0)<<4;";
                         } else if (_mnem[1] == "d8") {
                             /* 0xFE CP d8 */
-                            elem = "let v=addressSpace.read(PC+1);let diff=A-v;F=+!diff<<7|0b01000000|+(A%16-v%16<0)<<5|+(diff<0)<<4;";
+                            elem = "let v=addressSpace.read(PC+1);let diff=A-v;F=!diff<<7|0b01000000|(A%16-v%16<0)<<5|(diff<0)<<4;";
                         }
                     break;   
                     case "RET":   
@@ -550,23 +550,23 @@
                     case "DAA":
                         /* 0x27 DAA */
                         // if(FN){
-                        //          if( !FC & !FH & +(A>>4 < 10) & (A%16 < 10) ) { FC = 0;}
-                        //     else if( !FC &  FH & +(A>>4 < 9 ) & (A%16 >  5) ) { FC = 0; A=A+0xFA }
-                        //     else if(  FC & !FH & +(A>>4 > 6 ) & (A%16 < 10) ) { FC = 1; A=A+0xA0 }
-                        //     else if(  FC &  FH & +(A>>4 > 5 ) & (A%16 >  5) ) { FC = 1; A=A+0x9A }
+                        //          if( !FC & !FH & (A>>4 < 10) & (A%16 < 10) ) { FC = 0;}
+                        //     else if( !FC &  FH & (A>>4 < 9 ) & (A%16 >  5) ) { FC = 0; A=A+0xFA }
+                        //     else if(  FC & !FH & (A>>4 > 6 ) & (A%16 < 10) ) { FC = 1; A=A+0xA0 }
+                        //     else if(  FC &  FH & (A>>4 > 5 ) & (A%16 >  5) ) { FC = 1; A=A+0x9A }
                         // }else{
-                        //         if( !FC & !FH & +(A>>4 < 10) & (A%16 < 10) ) { FC = 0;}
-                        //    else if( !FC & !FH & +(A>>4 <  9) & (A%16 >  9) ) { FC = 0; A=A+0x06 }
-                        //    else if( !FC &  FH & +(A>>4 < 10) & (A%16 <  4) ) { FC = 0; A=A+0x06 }
-                        //    else if( !FC & !FH & +(A>>4 >  9) & (A%16 < 10) ) { FC = 1; A=A+0x60 }
-                        //    else if( !FC & !FH & +(A>>4 >  8) & (A%16 >  9) ) { FC = 1; A=A+0x66 }
-                        //    else if( !FC &  FH & +(A>>4 >  9) & (A%16 <  4) ) { FC = 1; A=A+0x66 }
-                        //    else if(  FC & !FH & +(A>>4 <  3) & (A%16 < 10) ) { FC = 1; A=A+0x60 }
-                        //    else if(  FC & !FH & +(A>>4 <  3) & (A%16 >  9) ) { FC = 1; A=A+0x66 }
-                        //    else if(  FC &  FH & +(A>>4 <  4) & (A%16 <  4) ) { FC = 1; A=A+0x66 }
+                        //         if( !FC & !FH & (A>>4 < 10) & (A%16 < 10) ) { FC = 0;}
+                        //    else if( !FC & !FH & (A>>4 <  9) & (A%16 >  9) ) { FC = 0; A=A+0x06 }
+                        //    else if( !FC &  FH & (A>>4 < 10) & (A%16 <  4) ) { FC = 0; A=A+0x06 }
+                        //    else if( !FC & !FH & (A>>4 >  9) & (A%16 < 10) ) { FC = 1; A=A+0x60 }
+                        //    else if( !FC & !FH & (A>>4 >  8) & (A%16 >  9) ) { FC = 1; A=A+0x66 }
+                        //    else if( !FC &  FH & (A>>4 >  9) & (A%16 <  4) ) { FC = 1; A=A+0x66 }
+                        //    else if(  FC & !FH & (A>>4 <  3) & (A%16 < 10) ) { FC = 1; A=A+0x60 }
+                        //    else if(  FC & !FH & (A>>4 <  3) & (A%16 >  9) ) { FC = 1; A=A+0x66 }
+                        //    else if(  FC &  FH & (A>>4 <  4) & (A%16 <  4) ) { FC = 1; A=A+0x66 }
                         // }
                         // A = A%256;
-                        elem = "if(F>>6&0b00000001){if(F>>5&0b00000001||(A&0x0F)>9)A+=0x06;if(F>>4&0b00000001||A>0x9F)A+=0x60;}else{if(F>>5&0b00000001)A=(A-6)&0xFF;if(F>>4&0b00000001)A-=0x60;}F&=0b11010000;if((A&0x0100)==0x0100)F|=0b00010000;A&=0xFF;F=(+!A)<<7|F&0b01110000;";
+                        elem = "if(F>>6&0b00000001){if(F>>5&0b00000001||(A&0x0F)>9)A+=0x06;if(F>>4&0b00000001||A>0x9F)A+=0x60;}else{if(F>>5&0b00000001)A=(A-6)&0xFF;if(F>>4&0b00000001)A-=0x60;}F&=0b11010000;if((A&0x0100)==0x0100)F|=0b00010000;A&=0xFF;F=!A<<7|F&0b01110000;";
                     break;
                     case "RRA":
                         /* 0x1F RRA */
