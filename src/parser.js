@@ -25,6 +25,7 @@
         const opcode = "0x" + r.toString(16).toUpperCase() + c.toString(16).toUpperCase();
         let elem = "";
         let mnem = "";
+        let flags = "";
         if (nodes.length > 4) {
             mnem = nodes[MNEM_NODE].textContent;
             let _mnem = mnem.split(" ");
@@ -36,14 +37,18 @@
                         /* 0xD5 PUSH DE */
                         /* 0xE5 PUSH HL */
                         /* 0xF5 PUSH AF */
-                        elem = "addressSpace.write(--SP,"+_mnem[1][0]+");addressSpace.write(--SP,"+_mnem[1][1]+");"; 
+                        flags = "";
+                        if (_mnem[1][1] == "F") flags = "let F=z<<7|n<<6|h<<5|n<<4;";
+                        elem = flags+"addressSpace.write(--SP,"+_mnem[1][0]+");addressSpace.write(--SP,"+_mnem[1][1]+");"; 
                     break;
                     case "POP":    
                         /* 0xC1 POP BC */
                         /* 0xD1 POP DE */
                         /* 0xE1 POP HL */
                         /* 0xF1 POP AF */
-                        elem = _mnem[1][1]+"=addressSpace.read(SP++);"+_mnem[1][0]+"=addressSpace.read(SP++);"; 
+                        flags = "";
+                        if (_mnem[1][1] == "F") flags = "z=F>>7&1;n=F>>6&1;h=F>>5&1;c=F>>4&1;";
+                        elem = (flags==""?"":"let ")+_mnem[1][1]+"=addressSpace.read(SP++);"+flags+_mnem[1][0]+"=addressSpace.read(SP++);"; 
                     break;
                     case "INC":    
                         switch (_mnem[1]) {
