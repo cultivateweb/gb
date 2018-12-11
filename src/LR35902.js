@@ -2,211 +2,193 @@
 
 const CLOCK = 4194304; //Hz
 
-const OPCODE_LENGTTHS = [
-    1,3,1,1,1,1,2,1,3,1,1,1,1,1,2,1,2,3,1,1,1,
-    1,2,1,2,1,1,1,1,1,2,1,2,3,1,1,1,1,2,1,2,1,
-    1,1,1,1,2,1,2,3,1,1,1,1,2,1,2,1,1,1,1,1,2,
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    1,1,1,1,1,3,3,3,1,2,1,1,1,3,1,3,3,2,1,1,1,
-    3,0,3,1,2,1,1,1,3,0,3,0,2,1,2,1,2,0,0,1,2,
-    1,2,1,3,0,0,0,2,1,2,1,2,1,0,1,2,1,2,1,3,1,
-    0,0,2,1];
-
-const OPCODE_CYCLES1 = [
-    4,12,8,8,4,4,8,4,20,8,8,8,4,4,8,4,4,12,8,8,4,
-    4,8,4,12,8,8,8,4,4,8,4,12,12,8,8,4,4,8,4,12,8,
-    8,8,4,4,8,4,12,12,8,8,12,12,12,4,12,8,8,8,4,4,
-    8,4,4,4,4,4,4,4,8,4,4,4,4,4,4,4,8,4,4,4,4,4,4,
-    4,8,4,4,4,4,4,4,4,8,4,4,4,4,4,4,4,8,4,4,4,4,4,
-    4,4,8,4,8,8,8,8,8,8,4,8,4,4,4,4,4,4,8,4,4,4,4,
-    4,4,4,8,4,4,4,4,4,4,4,8,4,4,4,4,4,4,4,8,4,4,4,
-    4,4,4,4,8,4,4,4,4,4,4,4,8,4,4,4,4,4,4,4,8,4,4,
-    4,4,4,4,4,8,4,4,4,4,4,4,4,8,4,20,12,16,16,24,
-    16,8,16,20,16,16,4,24,24,8,16,20,12,16,0,24,16,
-    8,16,20,16,16,0,24,0,8,16,12,12,8,0,0,16,8,16,
-    16,4,16,0,0,0,8,16,12,12,8,4,0,16,8,16,12,8,16,
-    4,0,0,8,16];
-
-const OPCODE_CYCLES2 = [
-    4,12,8,8,4,4,8,4,20,8,8,8,4,4,8,4,4,12,8,8,4,
-    4,8,4,12,8,8,8,4,4,8,4,8,12,8,8,4,4,8,4,8,
-    8,8,8,4,4,8,4,8,12,8,8,12,12,12,4,8,8,8,8,
-    4,4,8,4,4,4,4,4,4,4,8,4,4,4,4,4,4,4,8,4,4,4,4,4,
-    4,4,8,4,4,4,4,4,4,4,8,4,4,4,4,4,4,4,8,4,4,4,4,4,
-    4,4,8,4,8,8,8,8,8,8,4,8,4,4,4,4,4,4,8,4,4,4,4,4,
-    4,4,8,4,4,4,4,4,4,4,8,4,4,4,4,4,4,4,8,4,4,4,4,4,
-    4,4,8,4,4,4,4,4,4,4,8,4,4,4,4,4,4,4,8,4,4,4,4,4,
-    4,4,8,4,4,4,4,4,4,4,8,4,8,12,12,16,12,
-    16,8,16,8,16,12,4,12,24,8,16,8,12,
-    12,0,12,16,8,16,8,16,12,0,12,0,8,
-    16,12,12,8,0,0,16,8,16,16,4,16,0,0,0,8,16,12,12,
-    8,4,0,16,8,16,12,8,16,4,0,0,8,16];
+const OPCODE_LENGTH = [1,3,1,1,1,1,2,1,3,1,1,1,1,1,2,1,2,3,1,1,1,1,2,1,2,1,1,1,1,1,2,1,2,3,1,1,1,1,2,1,2,1,1,1,1,1,2,1,2,3,1,1,1,1,2,1,2,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,3,3,3,1,2,1,1,1,3,1,3,3,2,1,1,1,3,0,3,1,2,1,1,1,3,0,3,0,2,1,2,1,2,0,0,1,2,1,2,1,3,0,0,0,2,1,2,1,2,1,0,1,2,1,2,1,3,1,0,0,2,1];
+const OPCODE_CYCLE1 = [4,12,8,8,4,4,8,4,20,8,8,8,4,4,8,4,4,12,8,8,4,4,8,4,12,8,8,8,4,4,8,4,12,12,8,8,4,4,8,4,12,8,8,8,4,4,8,4,12,12,8,8,12,12,12,4,12,8,8,8,4,4,8,4,4,4,4,4,4,4,8,4,4,4,4,4,4,4,8,4,4,4,4,4,4,4,8,4,4,4,4,4,4,4,8,4,4,4,4,4,4,4,8,4,4,4,4,4,4,4,8,4,8,8,8,8,8,8,4,8,4,4,4,4,4,4,8,4,4,4,4,4,4,4,8,4,4,4,4,4,4,4,8,4,4,4,4,4,4,4,8,4,4,4,4,4,4,4,8,4,4,4,4,4,4,4,8,4,4,4,4,4,4,4,8,4,4,4,4,4,4,4,8,4,4,4,4,4,4,4,8,4,20,12,16,16,24,16,8,16,20,16,16,4,24,24,8,16,20,12,16,0,24,16,8,16,20,16,16,0,24,0,8,16,12,12,8,0,0,16,8,16,16,4,16,0,0,0,8,16,12,12,8,4,0,16,8,16,12,8,16,4,0,0,8,16];
+const OPCODE_CYCLE2 = [4,12,8,8,4,4,8,4,20,8,8,8,4,4,8,4,4,12,8,8,4,4,8,4,12,8,8,8,4,4,8,4, 8,12,8,8,4,4,8,4, 8,8,8,8,4,4,8,4, 8,12,8,8,12,12,12,4, 8,8,8,8,4,4,8,4,4,4,4,4,4,4,8,4,4,4,4,4,4,4,8,4,4,4,4,4,4,4,8,4,4,4,4,4,4,4,8,4,4,4,4,4,4,4,8,4,4,4,4,4,4,4,8,4,8,8,8,8,8,8,4,8,4,4,4,4,4,4,8,4,4,4,4,4,4,4,8,4,4,4,4,4,4,4,8,4,4,4,4,4,4,4,8,4,4,4,4,4,4,4,8,4,4,4,4,4,4,4,8,4,4,4,4,4,4,4,8,4,4,4,4,4,4,4,8,4,4,4,4,4,4,4,8,4, 8,12,12,16,12,16,8,16, 8,16,12,4,12,24,8,16, 8,12,12,0,12,16,8,16, 8,16,12,0,12,0,8,16,12,12,8,0,0,16,8,16,16,4,16,0,0,0,8,16,12,12,8,4,0,16,8,16,12,8,16,4,0,0,8,16];
 
 export function initLR35902(addressSpace) {
     let IME = false; // interrupt master enable
 
+    let stopped = false;
+    
+    // register F (znhc0000)
+    let z = false; // Zero Flag
+    let n = false; // Subtract Flag
+    let h = false; // Half Carry Flag
+    let c = false; // Carry Flag
+
     let A = 0x01; // accumulator
-    let F = 0x00; // flag registers ZNHC0000
-    let B = 0x00; //                |||+-Carry Flag
-    let C = 0x13; //                ||+--Half Carry Flag
-    let D = 0x00; //                |+---Subtract Flag
-    let E = 0xD8; //                +----Zero Flag
+    let B = 0x00;
+    let C = 0x13;
+    let D = 0x00;
+    let E = 0xD8;
     let H = 0x01;
     let L = 0x4D;
 
     let PC = 0x0100; // program counter 
     let SP = 0xFFFE; // stack pointer
 
-    let stopped = 0;
-  
     function cbinstruction(code) {
-        var data = 0;
-        var data0 = 0;
-        var op = 0;
-        
+        let data = 0, data0 = 0, op = 0;      
         switch (code%8) {
-           case 0: data = B; break;
-           case 1: data = C; break;
-           case 2: data = D; break;
-           case 3: data = E; break;
-           case 4: data = HL >> 8; break;
-           case 5: data = HL & 0xFF; break;
-           case 6: data = getAddress(HL); break;
-           case 7: data = A; break;
+            case 0: data = B; break;
+            case 1: data = C; break;
+            case 2: data = D; break;
+            case 3: data = E; break;
+            case 4: data = H; break;
+            case 5: data = L; break;
+            case 6: data = addressSpace.read(H<<8|L); break;
+            case 7: data = A; break;
         }
         data0 = data;
-        
         op = code / 8;
-        if (op >= 0 & op <= 7){
-           if (op == 0){ // RLC - Rotate left
-              if (data >= 128){data = ((data << 1) % 256) + 1; FC = 1;
-              } else {data = (data << 1) % 256; FC = 0;}
-           } else  if (op == 1){ // RRC - Rotate right
-              if (data & 1){data = (data >> 1) + 128; FC = 1;
-              } else {data = (data >> 1); FC = 0;}
-           } else  if (op == 2){ // RL - Rotate left through carry
-              if (data >= 128){data = ((data << 1) % 256) + FC; FC = 1;}
-              else{data = ((data << 1) % 256) + FC; FC = 0;}
-           } else  if (op == 3){ // RR - Rotate right through carry
-              if (data & 1){data = (data >> 1) + (FC*128); FC = 1;}
-              else{data = (data >> 1) + (FC*128); FC = 0;}
-           } else  if (op == 4){ // SLA - Shift left arithmetic
-              if (data >= 128) FC = 1; else FC = 0;
-              data = (data << 1) % 256;
-           } else  if (op == 5){ // SRA - Shift right arithmetic
-              if (data & 1){FC = 1;} else {FC = 0;}
-              data = (data >> 1) + (data>=128?128:0);
-           } else  if (op == 6){ // SWAP - Exchange low/hi-nibble
-              FC = 0;
-              data = ((data % 16)*16) + (data / 16);
-           } else  if (op == 7){ // SRL - Shift right logical
-              if (data & 1){FC = 1;} else {FC = 0};
-              data = (data >> 1);
-           }
-           if (data == 0) FZ = 1; else FZ = 0;
-           FN = 0;
-           FH = 0;
+        if (op >=0 & op <= 7) {
+            switch (op) {
+                case 0: // RLC - Rotate left
+                case 2: // RL  - Rotate left through carry
+                    c = data > 127;
+                    data = ((data << 1) % 256) + c;
+                break; 
+                case 1: // RRC - Rotate right
+                case 3: // RR  - Rotate right through carry
+                    c = data & 1;
+                    data = (data >> 1) + (c<<7);
+                break; 
+                case 4: // SLA - Shift left arithmetic
+                    c = data > 127;
+                    data = (data << 1) % 256;
+                break; 
+                case 5: // SRA - Shift right arithmetic
+                    c = data & 1;
+                    data = (data >> 1) + (data >= 128 ? 128 : 0);
+                break; 
+                case 6: // SWAP - Exchange low/hi-nibble
+                    c = 0;
+                    data = ((data % 16) * 16) + (data / 16);
+                break; 
+                case 7: // SRL - Shift right logical
+                    c = data & 1;
+                    data = data >> 1;
+                break; 
+            }         
+            z = !data;
+            n = h = 0;
         }
-        if (op >= 8 & op <=15){
-           FN = 0;
-           FH = 1;
-           if ((data & (1 << (op-8))) == 0) FZ = 1; else FZ = 0;
+
+        if (op >= 8 & op <= 15) {
+            n = 0;
+            h = 1;
+            z = !(data & (1 << (op - 8)));
         }
-        if (op >= 16 & op <=23){
-           data = data & ~(1<<(op-16)) ;
-        }
-        if (op >= 24 & op <=31){
-           data = data | 1<<(op-24);
-        }
-        
+
+        if (op >= 16 & op <= 23) data = data & ~(1 << (op - 16));
+        if (op >= 24 & op <= 31) data = data |   1 << (op - 24);
+         
         if (data0 != data) {
-           switch (code%8) {
-              case 0: B = data % 256; break;
-              case 1: C = data % 256; break;
-              case 2: D = data % 256; break;
-              case 3: E = data % 256; break;
-              case 4: setH(data % 256); break;
-              case 5: setL(data % 256); break;
-              case 6: putAddress(HL, data % 256); break;
-              case 7: A = data % 256; break;
-           }
+            let data = data % 256;
+            switch (code % 8) {
+               case 0: B = data; break;
+               case 1: C = data; break;
+               case 2: D = data; break;
+               case 3: E = data; break;
+               case 4: H = data; break;
+               case 5: L = data; break;
+               case 6: addressSpace.write(H<<8|L, data); break;
+               case 7: A = data; break;
+            }
+        } 
+    }
+
+    function DAA() {
+        let upper=A>>4,lower=A%16;
+        if (n) {
+                 if(!c & !h & upper<10 & lower<10){c = 0;}
+            else if(!c &  h & upper<9  & lower> 5){c = 0; A = A + 0xFA }
+            else if( c & !h & upper>6  & lower<10){c = 1; A = A + 0xA0 }
+            else if( c &  h & upper>5  & lower> 5){c = 1; A = A + 0x9A }
+        } else {
+                 if(!c & !h & upper<10 & lower<10){c = 0;}
+            else if(!c & !h & upper<9  & lower> 9){c = 0; A = A + 0x06 }
+            else if(!c &  h & upper<10 & lower< 4){c = 0; A = A + 0x06 }
+            else if(!c & !h & upper>9  & lower<10){c = 1; A = A + 0x60 }
+            else if(!c & !h & upper>8  & lower> 9){c = 1; A = A + 0x66 }
+            else if(!c &  h & upper>9  & lower< 4){c = 1; A = A + 0x66 }
+            else if( c & !h & upper<3  & lower<10){c = 1; A = A + 0x60 }
+            else if( c & !h & upper<3  & lower> 9){c = 1; A = A + 0x66 }
+            else if( c &  h & upper<4  & lower< 4){c = 1; A = A + 0x66 }
         }
-     }  
-  
+        A=A%256;
+    }
+
     // http://www.pastraiser.com/cpu/gameboy/gameboy_opcodes.html
     //                  |INS reg|← Instruction mnemonic
     // Length in bytes →|  2 8  |← Duration in cycles
-    //                  |Z N H C|← Flags affected
-   const OPCODES = [
+    //                  |z n h c|← Flags affected
+    const OPCODES = [
       /* 0x00 NOP          */ function(){},
       /* 0x01 LD BC,d16    */ function(){C=addressSpace.read(PC+1);B=addressSpace.read(PC+2);},
       /* 0x02 LD (BC),A    */ function(){addressSpace.write(B<<8|C,A);},
-      /* 0x03 INC BC       */ function(){let val=B<<8|C+1;B=val>>>8;C=val&0xFF;},
-      /* 0x04 INC B        */ function(){F=F&0x90;if(B>0xFE){F=F|0x60;B=0;}else{F=F&0x70;if(B%0x10==0x0F)F=F|0x20;B++;}},
-      /* 0x05 DEC B        */ function(){F=F&0xD0|0x40;if(B==0){F=F&0x70|0x20;B=0xFF;}else if(B==1){F=F|0x80;}else{F=F&0x70;if(B%0x10==0)F=F|0x20;B--;}},
+      /* 0x03 INC BC       */ function(){if(++C>0xFF){C=0;if(++B>0xFF)B=0;}},
+      /* 0x04 INC B        */ function(){n=0;z=h=B>0xFE;if(z)B=0;else{h=B%16==15;B+=1;}},
+      /* 0x05 DEC B        */ function(){n=1;if(B==0){z=0;h=1;B=0xFF;}else if(B==1){z=1;h=0;B=0;}else{z=0;h=B%16==0;B-=1;}},
       /* 0x06 LD B,d8      */ function(){B=addressSpace.read(PC+1);},
-      /* 0x07 RLCA         */ function(){let bit=A>>7;A=A<<1|bit; F=((~(A|~A+1)>>31&0b00000001)<<7|F&0b01110000)&(bit<<4|F&0b10000000);},
+      /* 0x07 RLCA         */ function(){cbinstruction(7);},
       /* 0x08 LD (a16),SP  */ function(){let addr=addressSpace.read(PC+2)<<8|addressSpace.read(PC+1);addressSpace.write(addr,SP&0xFF);addressSpace.write(addr+1,SP>>>8);},
-      /* 0x09 ADD HL,BC    */ function(){let HL=H<<8|L;let BC=B<<8|C;if(BC<0)BC=BC+0x010000;F=F&0xB0;F=((HL+BC>0xFFFF)<<4)|F&0xEF;F=(((HL%0x1000)+BC%0x1000>0x0FFF)<<5)|F&0xDF;HL=(HL+BC)%0x010000;H=HL>>>8;L=HL&0xFF;F=F&0x70},
+      /* 0x09 ADD HL,BC    */ function(){let HL=H<<8|L;let BC=B<<8|C;let s=HL+BC;if(BC<0)BC+=65536;n=0;c=s>65535;h=HL%4096+BC%4096>4095;HL=s%65536;},
       /* 0x0A LD A,(BC)    */ function(){A=addressSpace.read(B<<8|C);},
-      /* 0x0B DEC BC       */ function(){let val=B<<8|C-1;B=val>>>8;C=val&0xFF;},
-      /* 0x0C INC C        */ function(){F=F&0x90;if(C>0xFE){F=F|0x60;C=0;}else{F=F&0x70;if(C%0x10==0x0F)F=F|0x20;C++;}},
-      /* 0x0D DEC C        */ function(){F=F&0xD0|0x40;if(C==0){F=F&0x70|0x20;C=0xFF;}else if(C==1){F=F|0x80;}else{F=F&0x70;if(C%0x10==0)F=F|0x20;C--;}},
+      /* 0x0B DEC BC       */ function(){if(--C<0){C=0xFF;if(--B<0)B=0xFF;}},
+      /* 0x0C INC C        */ function(){n=0;z=h=C>0xFE;if(z)C=0;else{h=C%16==15;C+=1;}},
+      /* 0x0D DEC C        */ function(){n=1;if(C==0){z=0;h=1;C=0xFF;}else if(C==1){z=1;h=0;C=0;}else{z=0;h=C%16==0;C-=1;}},
       /* 0x0E LD C,d8      */ function(){C=addressSpace.read(PC+1);},
-      /* 0x0F RRCA         */ function(){let bit=A&0b00000001;A=A>>1|bit<<7;F=bit<<4|F&0b00000000;},
-      /* 0x10 STOP 0       */ function(){stopped=1;},
+      /* 0x0F RRCA         */ function(){cbinstruction(15);},
+      /* 0x10 STOP 0       */ function(){stopped=true;},
       /* 0x11 LD DE,d16    */ function(){E=addressSpace.read(PC+1);D=addressSpace.read(PC+2);},
       /* 0x12 LD (DE),A    */ function(){addressSpace.write(D<<8|E,A);},
-      /* 0x13 INC DE       */ function(){let val=D<<8|E+1;D=val>>>8;E=val&0xFF;},
-      /* 0x14 INC D        */ function(){F=F&0x90;if(D>0xFE){F=F|0x60;D=0;}else{F=F&0x70;if(D%0x10==0x0F)F=F|0x20;D++;}},
-      /* 0x15 DEC D        */ function(){F=F&0xD0|0x40;if(D==0){F=F&0x70|0x20;D=0xFF;}else if(D==1){F=F|0x80;}else{F=F&0x70;if(D%0x10==0)F=F|0x20;D--;}},
+      /* 0x13 INC DE       */ function(){if(++E>0xFF){E=0;if(++D>0xFF)D=0;}},
+      /* 0x14 INC D        */ function(){n=0;z=h=D>0xFE;if(z)D=0;else{h=D%16==15;D+=1;}},
+      /* 0x15 DEC D        */ function(){n=1;if(D==0){z=0;h=1;D=0xFF;}else if(D==1){z=1;h=0;D=0;}else{z=0;h=D%16==0;D-=1;}},
       /* 0x16 LD D,d8      */ function(){D=addressSpace.read(PC+1);},
-      /* 0x17 RLA          */ function(){let bit=A>>7;A=A<<1|F>>4&0b00000001;F=bit<<4|F&0b00000000;},
+      /* 0x17 RLA          */ function(){cbinstruction(23);},
       /* 0x18 JR r8        */ function(){let byte=addressSpace.read(PC+1);byte=byte<0x80?byte:(byte-0x0100);PC=PC+byte;},
-      /* 0x19 ADD HL,DE    */ function(){let HL=H<<8|L;let DE=D<<8|E;if(DE<0)DE=DE+0x010000;F=F&0xB0;F=((HL+DE>0xFFFF)<<4)|F&0xEF;F=(((HL%0x1000)+DE%0x1000>0x0FFF)<<5)|F&0xDF;HL=(HL+DE)%0x010000;H=HL>>>8;L=HL&0xFF;F=F&0x70},
+      /* 0x19 ADD HL,DE    */ function(){let HL=H<<8|L;let DE=D<<8|E;let s=HL+DE;if(DE<0)DE+=65536;n=0;c=s>65535;h=HL%4096+DE%4096>4095;HL=s%65536;},
       /* 0x1A LD A,(DE)    */ function(){A=addressSpace.read(D<<8|E);},
-      /* 0x1B DEC DE       */ function(){let val=D<<8|E-1;D=val>>>8;E=val&0xFF;},
-      /* 0x1C INC E        */ function(){F=F&0x90;if(E>0xFE){F=F|0x60;E=0;}else{F=F&0x70;if(E%0x10==0x0F)F=F|0x20;E++;}},
-      /* 0x1D DEC E        */ function(){F=F&0xD0|0x40;if(E==0){F=F&0x70|0x20;E=0xFF;}else if(E==1){F=F|0x80;}else{F=F&0x70;if(E%0x10==0)F=F|0x20;E--;}},
+      /* 0x1B DEC DE       */ function(){if(--E<0){E=0xFF;if(--D<0)D=0xFF;}},
+      /* 0x1C INC E        */ function(){n=0;z=h=E>0xFE;if(z)E=0;else{h=E%16==15;E+=1;}},
+      /* 0x1D DEC E        */ function(){n=1;if(E==0){z=0;h=1;E=0xFF;}else if(E==1){z=1;h=0;E=0;}else{z=0;h=E%16==0;E-=1;}},
       /* 0x1E LD E,d8      */ function(){E=addressSpace.read(PC+1);},
-      /* 0x1F RRA          */ function(){let bit=A&0b00000001;A=A>>1|F>>4&0b00000001;F=bit<<4|F&0b00000000;},
-      /* 0x20 JR NZ,r8     */ function(){if(!(F>>7&0b00000001)){let byte=addressSpace.read(PC+1);byte=byte<0x80?byte:(byte-0x0100);PC=PC+byte;}else cycle=8;},
+      /* 0x1F RRA          */ function(){cbinstruction(31);},
+      /* 0x20 JR NZ,r8     */ function(){if(z)cycle=8;else{let byte=addressSpace.read(PC+1);byte=byte<0x80?byte:(byte-0x0100);PC=PC+byte;}},
       /* 0x21 LD HL,d16    */ function(){L=addressSpace.read(PC+1);H=addressSpace.read(PC+2);},
       /* 0x22 LD (HL+),A   */ function(){let HL=H<<8|L;addressSpace.write(HL++,A);if(HL>0xFFFF){H=0;L=0;}else{H=HL>>>8;L=HL&0xFF;}},
-      /* 0x23 INC HL       */ function(){let val=H<<8|L+1;H=val>>>8;L=val&0xFF;},
-      /* 0x24 INC H        */ function(){F=F&0x90;if(H>0xFE){F=F|0x60;H=0;}else{F=F&0x70;if(H%0x10==0x0F)F=F|0x20;H++;}},
-      /* 0x25 DEC H        */ function(){F=F&0xD0|0x40;if(H==0){F=F&0x70|0x20;H=0xFF;}else if(H==1){F=F|0x80;}else{F=F&0x70;if(H%0x10==0)F=F|0x20;H--;}},
+      /* 0x23 INC HL       */ function(){if(++L>0xFF){L=0;if(++H>0xFF)H=0;}},
+      /* 0x24 INC H        */ function(){n=0;z=h=H>0xFE;if(z)H=0;else{h=H%16==15;H+=1;}},
+      /* 0x25 DEC H        */ function(){n=1;if(H==0){z=0;h=1;H=0xFF;}else if(H==1){z=1;h=0;H=0;}else{z=0;h=H%16==0;H-=1;}},
       /* 0x26 LD H,d8      */ function(){H=addressSpace.read(PC+1);},
-      /* 0x27 DAA          */ function(){if(F>>6&0b00000001){if(F>>5&0b00000001||(A&0x0F)>9)A+=0x06;if(F>>4&0b00000001||A>0x9F)A+=0x60;}else{if(F>>5&0b00000001)A=(A-6)&0xFF;if(F>>4&0b00000001)A-=0x60;}F&=0b11010000;if((A&0x0100)==0x0100)F|=0b00010000;A&=0xFF;F=!A<<7|F&0b01110000;},
-      /* 0x28 JR Z,r8      */ function(){if(F>>7&0b00000001){let byte=addressSpace.read(PC+1);byte=byte<0x80?byte:(byte-0x0100);PC=PC+byte;}else cycle=8;},
-      /* 0x29 ADD HL,HL    */ function(){let HL=H<<8|L;let HL=H<<8|L;if(HL<0)HL=HL+0x010000;F=F&0xB0;F=((HL+HL>0xFFFF)<<4)|F&0xEF;F=(((HL%0x1000)+HL%0x1000>0x0FFF)<<5)|F&0xDF;HL=(HL+HL)%0x010000;H=HL>>>8;L=HL&0xFF;F=F&0x70},
+      /* 0x27 DAA          */ function(){DAA();},
+      /* 0x28 JR Z,r8      */ function(){if(z){let byte=addressSpace.read(PC+1);byte=byte<0x80?byte:(byte-0x0100);PC=PC+byte;}else cycle=8;},
+      /* 0x29 ADD HL,HL    */ function(){let HL=H<<8|L;let HL=H<<8|L;let s=HL+HL;if(HL<0)HL+=65536;n=0;c=s>65535;h=HL%4096+HL%4096>4095;HL=s%65536;},
       /* 0x2A LD A,(HL+)   */ function(){let HL=H<<8|L;A=addressSpace.read(HL++);if(HL>0xFFFF){H=0;L=0;}else{H=HL>>>8;L=HL&0xFF;}},
-      /* 0x2B DEC HL       */ function(){let val=H<<8|L-1;H=val>>>8;L=val&0xFF;},
-      /* 0x2C INC L        */ function(){F=F&0x90;if(L>0xFE){F=F|0x60;L=0;}else{F=F&0x70;if(L%0x10==0x0F)F=F|0x20;L++;}},
-      /* 0x2D DEC L        */ function(){F=F&0xD0|0x40;if(L==0){F=F&0x70|0x20;L=0xFF;}else if(L==1){F=F|0x80;}else{F=F&0x70;if(L%0x10==0)F=F|0x20;L--;}},
+      /* 0x2B DEC HL       */ function(){if(--L<0){L=0xFF;if(--H<0)H=0xFF;}},
+      /* 0x2C INC L        */ function(){n=0;z=h=L>0xFE;if(z)L=0;else{h=L%16==15;L+=1;}},
+      /* 0x2D DEC L        */ function(){n=1;if(L==0){z=0;h=1;L=0xFF;}else if(L==1){z=1;h=0;L=0;}else{z=0;h=L%16==0;L-=1;}},
       /* 0x2E LD L,d8      */ function(){L=addressSpace.read(PC+1);},
-      /* 0x2F CPL          */ function(){A=~A;F=F|0b01100000;},
-      /* 0x30 JR NC,r8     */ function(){if(!(F>>4&0b00000001)){let byte=addressSpace.read(PC+1);byte=byte<0x80?byte:(byte-0x0100);PC=PC+byte;}else cycle=8;},
+      /* 0x2F CPL          */ function(){A=A^0xFF;n=h=1;},
+      /* 0x30 JR NC,r8     */ function(){if(c)cycle=8;else{let byte=addressSpace.read(PC+1);byte=byte<0x80?byte:(byte-0x0100);PC=PC+byte;}},
       /* 0x31 LD SP,d16    */ function(){P=addressSpace.read(PC+1);S=addressSpace.read(PC+2);},
       /* 0x32 LD (HL-),A   */ function(){let HL=H<<8|L;addressSpace.write(HL--,A);if(HL<0){H=0xFF;L=0xFF;}else{H=HL>>>8;L=HL&0xFF;}},
-      /* 0x33 INC SP       */ function(){let val=S<<8|P+1;S=val>>>8;P=val&0xFF;},
-      /* 0x34 INC (HL)     */ function(){let HL=H<<8|L;addressSpace.write(HL,addressSpace.read(HL)+1);},
-      /* 0x35 DEC (HL)     */ function(){let HL=H<<8|L;addressSpace.write(HL,addressSpace.read(HL)-1);},
+      /* 0x33 INC SP       */ function(){if(++P>0xFF){P=0;if(++S>0xFF)S=0;}},
+      /* 0x34 INC (HL)     */ function(){let HL=H<<8|L;let v=addressSpace.read(HL);n=0;z=h=v>0xFE;if(z)v=0;else{h=v%16==15;v+=1;}addressSpace.write(HL,v);},
+      /* 0x35 DEC (HL)     */ function(){let HL=H<<8|L;let v=addressSpace.read(HL);n=1;if(v==0){z=0;h=1;v=0xFF;}else if(v==1){z=1;h=0;v=0;}else{z=0;h=v%16==0;v-=1;}addressSpace.write(HL,v);},
       /* 0x36 LD (HL),d8   */ function(){addressSpace.write(H<<8|L,addressSpace.read(PC+1));},
-      /* 0x37 SCF          */ function(){F=F&0b10000000|0b00010000;},
-      /* 0x38 JR C,r8      */ function(){if(F>>4&0b00000001){let byte=addressSpace.read(PC+1);byte=byte<0x80?byte:(byte-0x0100);PC=PC+byte;}else cycle=8;},
-      /* 0x39 ADD HL,SP    */ function(){let HL=H<<8|L;let SP=S<<8|P;if(SP<0)SP=SP+0x010000;F=F&0xB0;F=((HL+SP>0xFFFF)<<4)|F&0xEF;F=(((HL%0x1000)+SP%0x1000>0x0FFF)<<5)|F&0xDF;HL=(HL+SP)%0x010000;H=HL>>>8;L=HL&0xFF;F=F&0x70},
+      /* 0x37 SCF          */ function(){c=1;n=h=0;},
+      /* 0x38 JR C,r8      */ function(){if(c){let byte=addressSpace.read(PC+1);byte=byte<0x80?byte:(byte-0x0100);PC=PC+byte;}else cycle=8;},
+      /* 0x39 ADD HL,SP    */ function(){let HL=H<<8|L;let SP=S<<8|P;let s=HL+SP;if(SP<0)SP+=65536;n=0;c=s>65535;h=HL%4096+SP%4096>4095;HL=s%65536;},
       /* 0x3A LD A,(HL-)   */ function(){let HL=H<<8|L;A=addressSpace.read(HL--);if(HL<0){H=0xFF;L=0xFF;}else{H=HL>>>8;L=HL&0xFF;}},
-      /* 0x3B DEC SP       */ function(){let val=S<<8|P-1;S=val>>>8;P=val&0xFF;},
-      /* 0x3C INC A        */ function(){F=F&0x90;if(A>0xFE){F=F|0x60;A=0;}else{F=F&0x70;if(A%0x10==0x0F)F=F|0x20;A++;}},
-      /* 0x3D DEC A        */ function(){F=F&0xD0|0x40;if(A==0){F=F&0x70|0x20;A=0xFF;}else if(A==1){F=F|0x80;}else{F=F&0x70;if(A%0x10==0)F=F|0x20;A--;}},
+      /* 0x3B DEC SP       */ function(){if(--P<0){P=0xFF;if(--S<0)S=0xFF;}},
+      /* 0x3C INC A        */ function(){n=0;z=h=A>0xFE;if(z)A=0;else{h=A%16==15;A+=1;}},
+      /* 0x3D DEC A        */ function(){n=1;if(A==0){z=0;h=1;A=0xFF;}else if(A==1){z=1;h=0;A=0;}else{z=0;h=A%16==0;A-=1;}},
       /* 0x3E LD A,d8      */ function(){A=addressSpace.read(PC+1);},
-      /* 0x3F CCF          */ function(){F=F&0b10010000&(1-(F>>4&0b00000001)<<4|F&0b11100000);},
+      /* 0x3F CCF          */ function(){c=1-c;n=h=0;},
       /* 0x40 LD B,B       */ function(){B=B;},
       /* 0x41 LD B,C       */ function(){B=C;},
       /* 0x42 LD B,D       */ function(){B=D;},
@@ -271,101 +253,101 @@ export function initLR35902(addressSpace) {
       /* 0x7D LD A,L       */ function(){A=L;},
       /* 0x7E LD A,(HL)    */ function(){A=addressSpace.read(H<<8|L);},
       /* 0x7F LD A,A       */ function(){A=A;},
-      /* 0x80 ADD A,B      */ function(){let v=B;let s=A+v;F=!(s%0x0100)<<7|(A%0x10+v%0x10>0x0F)<<5|(s>0xFF)<<4;A=s%0x0100;},
-      /* 0x81 ADD A,C      */ function(){let v=C;let s=A+v;F=!(s%0x0100)<<7|(A%0x10+v%0x10>0x0F)<<5|(s>0xFF)<<4;A=s%0x0100;},
-      /* 0x82 ADD A,D      */ function(){let v=D;let s=A+v;F=!(s%0x0100)<<7|(A%0x10+v%0x10>0x0F)<<5|(s>0xFF)<<4;A=s%0x0100;},
-      /* 0x83 ADD A,E      */ function(){let v=E;let s=A+v;F=!(s%0x0100)<<7|(A%0x10+v%0x10>0x0F)<<5|(s>0xFF)<<4;A=s%0x0100;},
-      /* 0x84 ADD A,H      */ function(){let v=H;let s=A+v;F=!(s%0x0100)<<7|(A%0x10+v%0x10>0x0F)<<5|(s>0xFF)<<4;A=s%0x0100;},
-      /* 0x85 ADD A,L      */ function(){let v=L;let s=A+v;F=!(s%0x0100)<<7|(A%0x10+v%0x10>0x0F)<<5|(s>0xFF)<<4;A=s%0x0100;},
-      /* 0x86 ADD A,(HL)   */ function(){let v=addressSpace.read(H<<8|L);let s=A+v;F=!(s%0x0100)<<7|(A%0x10+v%0x10>0x0F)<<5|(s>0xFF)<<4;A=s%0x0100;},
-      /* 0x87 ADD A,A      */ function(){let v=A;let s=A+v;F=!(s%0x0100)<<7|(A%0x10+v%0x10>0x0F)<<5|(s>0xFF)<<4;A=s%0x0100;},
-      /* 0x88 ADC A,B      */ function(){let v=B+(F>>4&0b00000001);let s=A+v;F=!(s%0x0100)<<7|(A%0x10+v%0x10>0x0F)<<5|(s>0xFF)<<4;A=s%0x0100;},
-      /* 0x89 ADC A,C      */ function(){let v=C+(F>>4&0b00000001);let s=A+v;F=!(s%0x0100)<<7|(A%0x10+v%0x10>0x0F)<<5|(s>0xFF)<<4;A=s%0x0100;},
-      /* 0x8A ADC A,D      */ function(){let v=D+(F>>4&0b00000001);let s=A+v;F=!(s%0x0100)<<7|(A%0x10+v%0x10>0x0F)<<5|(s>0xFF)<<4;A=s%0x0100;},
-      /* 0x8B ADC A,E      */ function(){let v=E+(F>>4&0b00000001);let s=A+v;F=!(s%0x0100)<<7|(A%0x10+v%0x10>0x0F)<<5|(s>0xFF)<<4;A=s%0x0100;},
-      /* 0x8C ADC A,H      */ function(){let v=H+(F>>4&0b00000001);let s=A+v;F=!(s%0x0100)<<7|(A%0x10+v%0x10>0x0F)<<5|(s>0xFF)<<4;A=s%0x0100;},
-      /* 0x8D ADC A,L      */ function(){let v=L+(F>>4&0b00000001);let s=A+v;F=!(s%0x0100)<<7|(A%0x10+v%0x10>0x0F)<<5|(s>0xFF)<<4;A=s%0x0100;},
-      /* 0x8E ADC A,(HL)   */ function(){let v=addressSpace.read(H<<8|L)+(F>>4&0b00000001);let s=A+v;F=!(s%0x0100)<<7|(A%0x10+v%0x10>0x0F)<<5|(s>0xFF)<<4;A=s%0x0100;},
-      /* 0x8F ADC A,A      */ function(){let v=A+(F>>4&0b00000001);let s=A+v;F=!(s%0x0100)<<7|(A%0x10+v%0x10>0x0F)<<5|(s>0xFF)<<4;A=s%0x0100;},
-      /* 0x90 SUB B        */ function(){let v=B;let diff=A-v;F=!diff<<7|0b01000000|(A%16-v%16<0)<<5|(diff<0)<<4;A=(diff+0x0100)%0x0100;},
-      /* 0x91 SUB C        */ function(){let v=C;let diff=A-v;F=!diff<<7|0b01000000|(A%16-v%16<0)<<5|(diff<0)<<4;A=(diff+0x0100)%0x0100;},
-      /* 0x92 SUB D        */ function(){let v=D;let diff=A-v;F=!diff<<7|0b01000000|(A%16-v%16<0)<<5|(diff<0)<<4;A=(diff+0x0100)%0x0100;},
-      /* 0x93 SUB E        */ function(){let v=E;let diff=A-v;F=!diff<<7|0b01000000|(A%16-v%16<0)<<5|(diff<0)<<4;A=(diff+0x0100)%0x0100;},
-      /* 0x94 SUB H        */ function(){let v=H;let diff=A-v;F=!diff<<7|0b01000000|(A%16-v%16<0)<<5|(diff<0)<<4;A=(diff+0x0100)%0x0100;},
-      /* 0x95 SUB L        */ function(){let v=L;let diff=A-v;F=!diff<<7|0b01000000|(A%16-v%16<0)<<5|(diff<0)<<4;A=(diff+0x0100)%0x0100;},
-      /* 0x96 SUB (HL)     */ function(){let v=addressSpace.read(H<<8|L);let diff=A-v;F=!diff<<7|0b01000000|(A%16-v%16<0)<<5|(diff<0)<<4;A=(diff+0x0100)%0x0100;},
-      /* 0x97 SUB A        */ function(){let v=A;let diff=A-v;F=!diff<<7|0b01000000|(A%16-v%16<0)<<5|(diff<0)<<4;A=(diff+0x0100)%0x0100;},
-      /* 0x98 SBC A,B      */ function(){let v=B+(F>>4&0b00000001);let diff=A-v;F=!diff<<7|0b01000000|(A%16-v%16<0)<<5|(diff<0)<<4;A=(diff+0x0100)%0x0100;},
-      /* 0x99 SBC A,C      */ function(){let v=C+(F>>4&0b00000001);let diff=A-v;F=!diff<<7|0b01000000|(A%16-v%16<0)<<5|(diff<0)<<4;A=(diff+0x0100)%0x0100;},
-      /* 0x9A SBC A,D      */ function(){let v=D+(F>>4&0b00000001);let diff=A-v;F=!diff<<7|0b01000000|(A%16-v%16<0)<<5|(diff<0)<<4;A=(diff+0x0100)%0x0100;},
-      /* 0x9B SBC A,E      */ function(){let v=E+(F>>4&0b00000001);let diff=A-v;F=!diff<<7|0b01000000|(A%16-v%16<0)<<5|(diff<0)<<4;A=(diff+0x0100)%0x0100;},
-      /* 0x9C SBC A,H      */ function(){let v=H+(F>>4&0b00000001);let diff=A-v;F=!diff<<7|0b01000000|(A%16-v%16<0)<<5|(diff<0)<<4;A=(diff+0x0100)%0x0100;},
-      /* 0x9D SBC A,L      */ function(){let v=L+(F>>4&0b00000001);let diff=A-v;F=!diff<<7|0b01000000|(A%16-v%16<0)<<5|(diff<0)<<4;A=(diff+0x0100)%0x0100;},
-      /* 0x9E SBC A,(HL)   */ function(){let v=(HL)+(F>>4&0b00000001);let diff=A-v;F=!diff<<7|0b01000000|(A%16-v%16<0)<<5|(diff<0)<<4;A=(diff+0x0100)%0x0100;},
-      /* 0x9F SBC A,A      */ function(){let v=A+(F>>4&0b00000001);let diff=A-v;F=!diff<<7|0b01000000|(A%16-v%16<0)<<5|(diff<0)<<4;A=(diff+0x0100)%0x0100;},
-      /* 0xA0 AND B        */ function(){A=A&B;F=!A<<7|0b00100000;},
-      /* 0xA1 AND C        */ function(){A=A&C;F=!A<<7|0b00100000;},
-      /* 0xA2 AND D        */ function(){A=A&D;F=!A<<7|0b00100000;},
-      /* 0xA3 AND E        */ function(){A=A&E;F=!A<<7|0b00100000;},
-      /* 0xA4 AND H        */ function(){A=A&H;F=!A<<7|0b00100000;},
-      /* 0xA5 AND L        */ function(){A=A&L;F=!A<<7|0b00100000;},
-      /* 0xA6 AND (HL)     */ function(){A=A&addressSpace.read(H<<8|L);F=!A<<7|0b00100000;},
-      /* 0xA7 AND A        */ function(){A=A&A;F=!A<<7|0b00100000;},
-      /* 0xA8 XOR B        */ function(){A=A^B;F=!A<<7;},
-      /* 0xA9 XOR C        */ function(){A=A^C;F=!A<<7;},
-      /* 0xAA XOR D        */ function(){A=A^D;F=!A<<7;},
-      /* 0xAB XOR E        */ function(){A=A^E;F=!A<<7;},
-      /* 0xAC XOR H        */ function(){A=A^H;F=!A<<7;},
-      /* 0xAD XOR L        */ function(){A=A^L;F=!A<<7;},
-      /* 0xAE XOR (HL)     */ function(){A=A^addressSpace.read(H<<8|L);F=!A<<7;},
-      /* 0xAF XOR A        */ function(){A=A^A;F=!A<<7;},
-      /* 0xB0 OR B         */ function(){A=A|B;F=!A<<7;},
-      /* 0xB1 OR C         */ function(){A=A|C;F=!A<<7;},
-      /* 0xB2 OR D         */ function(){A=A|D;F=!A<<7;},
-      /* 0xB3 OR E         */ function(){A=A|E;F=!A<<7;},
-      /* 0xB4 OR H         */ function(){A=A|H;F=!A<<7;},
-      /* 0xB5 OR L         */ function(){A=A|L;F=!A<<7;},
-      /* 0xB6 OR (HL)      */ function(){A=A|addressSpace.read(H<<8|L);F=!A<<7;},
-      /* 0xB7 OR A         */ function(){A=A|A;F=!A<<7;},
-      /* 0xB8 CP B         */ function(){let v=B;let diff=A-v;F=!diff<<7|0b01000000|(A%16-v%16<0)<<5|(diff<0)<<4;},
-      /* 0xB9 CP C         */ function(){let v=C;let diff=A-v;F=!diff<<7|0b01000000|(A%16-v%16<0)<<5|(diff<0)<<4;},
-      /* 0xBA CP D         */ function(){let v=D;let diff=A-v;F=!diff<<7|0b01000000|(A%16-v%16<0)<<5|(diff<0)<<4;},
-      /* 0xBB CP E         */ function(){let v=E;let diff=A-v;F=!diff<<7|0b01000000|(A%16-v%16<0)<<5|(diff<0)<<4;},
-      /* 0xBC CP H         */ function(){let v=H;let diff=A-v;F=!diff<<7|0b01000000|(A%16-v%16<0)<<5|(diff<0)<<4;},
-      /* 0xBD CP L         */ function(){let v=L;let diff=A-v;F=!diff<<7|0b01000000|(A%16-v%16<0)<<5|(diff<0)<<4;},
-      /* 0xBE CP (HL)      */ function(){let v=addressSpace.read(H<<8|L);let diff=A-v;F=!diff<<7|0b01000000|(A%16-v%16<0)<<5|(diff<0)<<4;},
-      /* 0xBF CP A         */ function(){let v=A;let diff=A-v;F=!diff<<7|0b01000000|(A%16-v%16<0)<<5|(diff<0)<<4;},
-      /* 0xC0 RET NZ       */ function(){if(!F>>7&0b00000001){PC=addressSpace.read(SP+1)<<8|addressSpace.read(SP);SP=(SP+2)%0x010000;}else cycle=8;},
+      /* 0x80 ADD A,B      */ function(){let v=B;let s=A+v;n=0;c=s>255;z=!(s%256);h=A%16+v%16>15;A=s%256;},
+      /* 0x81 ADD A,C      */ function(){let v=C;let s=A+v;n=0;c=s>255;z=!(s%256);h=A%16+v%16>15;A=s%256;},
+      /* 0x82 ADD A,D      */ function(){let v=D;let s=A+v;n=0;c=s>255;z=!(s%256);h=A%16+v%16>15;A=s%256;},
+      /* 0x83 ADD A,E      */ function(){let v=E;let s=A+v;n=0;c=s>255;z=!(s%256);h=A%16+v%16>15;A=s%256;},
+      /* 0x84 ADD A,H      */ function(){let v=H;let s=A+v;n=0;c=s>255;z=!(s%256);h=A%16+v%16>15;A=s%256;},
+      /* 0x85 ADD A,L      */ function(){let v=L;let s=A+v;n=0;c=s>255;z=!(s%256);h=A%16+v%16>15;A=s%256;},
+      /* 0x86 ADD A,(HL)   */ function(){let v=addressSpace.read(H<<8|L);let s=A+v;n=0;c=s>255;z=!(s%256);h=A%16+v%16>15;A=s%256;},
+      /* 0x87 ADD A,A      */ function(){let v=A;let s=A+v;n=0;c=s>255;z=!(s%256);h=A%16+v%16>15;A=s%256;},
+      /* 0x88 ADC A,B      */ function(){let v=B+c;let s=A+v;n=0;c=s>255;z=!(s%256);h=A%16+v%16>15;A=s%256;},
+      /* 0x89 ADC A,C      */ function(){let v=C+c;let s=A+v;n=0;c=s>255;z=!(s%256);h=A%16+v%16>15;A=s%256;},
+      /* 0x8A ADC A,D      */ function(){let v=D+c;let s=A+v;n=0;c=s>255;z=!(s%256);h=A%16+v%16>15;A=s%256;},
+      /* 0x8B ADC A,E      */ function(){let v=E+c;let s=A+v;n=0;c=s>255;z=!(s%256);h=A%16+v%16>15;A=s%256;},
+      /* 0x8C ADC A,H      */ function(){let v=H+c;let s=A+v;n=0;c=s>255;z=!(s%256);h=A%16+v%16>15;A=s%256;},
+      /* 0x8D ADC A,L      */ function(){let v=L+c;let s=A+v;n=0;c=s>255;z=!(s%256);h=A%16+v%16>15;A=s%256;},
+      /* 0x8E ADC A,(HL)   */ function(){let v=addressSpace.read(H<<8|L)+c;let s=A+v;n=0;c=s>255;z=!(s%256);h=A%16+v%16>15;A=s%256;},
+      /* 0x8F ADC A,A      */ function(){let v=A+c;let s=A+v;n=0;c=s>255;z=!(s%256);h=A%16+v%16>15;A=s%256;},
+      /* 0x90 SUB B        */ function(){let v=B;let d=A-v;n=1;c=d<0;z=!d;h=A%16-v%16<0;A=(d+0x0100)%0x0100;},
+      /* 0x91 SUB C        */ function(){let v=C;let d=A-v;n=1;c=d<0;z=!d;h=A%16-v%16<0;A=(d+0x0100)%0x0100;},
+      /* 0x92 SUB D        */ function(){let v=D;let d=A-v;n=1;c=d<0;z=!d;h=A%16-v%16<0;A=(d+0x0100)%0x0100;},
+      /* 0x93 SUB E        */ function(){let v=E;let d=A-v;n=1;c=d<0;z=!d;h=A%16-v%16<0;A=(d+0x0100)%0x0100;},
+      /* 0x94 SUB H        */ function(){let v=H;let d=A-v;n=1;c=d<0;z=!d;h=A%16-v%16<0;A=(d+0x0100)%0x0100;},
+      /* 0x95 SUB L        */ function(){let v=L;let d=A-v;n=1;c=d<0;z=!d;h=A%16-v%16<0;A=(d+0x0100)%0x0100;},
+      /* 0x96 SUB (HL)     */ function(){let v=addressSpace.read(H<<8|L);let d=A-v;n=1;c=d<0;z=!d;h=A%16-v%16<0;A=(d+0x0100)%0x0100;},
+      /* 0x97 SUB A        */ function(){let v=A;let d=A-v;n=1;c=d<0;z=!d;h=A%16-v%16<0;A=(d+0x0100)%0x0100;},
+      /* 0x98 SBC A,B      */ function(){let v=B+c;let d=A-v;n=1;c=d<0;z=!d;h=A%16-v%16<0;A=(d+0x0100)%0x0100;},
+      /* 0x99 SBC A,C      */ function(){let v=C+c;let d=A-v;n=1;c=d<0;z=!d;h=A%16-v%16<0;A=(d+0x0100)%0x0100;},
+      /* 0x9A SBC A,D      */ function(){let v=D+c;let d=A-v;n=1;c=d<0;z=!d;h=A%16-v%16<0;A=(d+0x0100)%0x0100;},
+      /* 0x9B SBC A,E      */ function(){let v=E+c;let d=A-v;n=1;c=d<0;z=!d;h=A%16-v%16<0;A=(d+0x0100)%0x0100;},
+      /* 0x9C SBC A,H      */ function(){let v=H+c;let d=A-v;n=1;c=d<0;z=!d;h=A%16-v%16<0;A=(d+0x0100)%0x0100;},
+      /* 0x9D SBC A,L      */ function(){let v=L+c;let d=A-v;n=1;c=d<0;z=!d;h=A%16-v%16<0;A=(d+0x0100)%0x0100;},
+      /* 0x9E SBC A,(HL)   */ function(){let v=(HL)+c;let d=A-v;n=1;c=d<0;z=!d;h=A%16-v%16<0;A=(d+0x0100)%0x0100;},
+      /* 0x9F SBC A,A      */ function(){let v=A+c;let d=A-v;n=1;c=d<0;z=!d;h=A%16-v%16<0;A=(d+0x0100)%0x0100;},
+      /* 0xA0 AND B        */ function(){A=A&B;h=1;n=c=0;z=!A;},
+      /* 0xA1 AND C        */ function(){A=A&C;h=1;n=c=0;z=!A;},
+      /* 0xA2 AND D        */ function(){A=A&D;h=1;n=c=0;z=!A;},
+      /* 0xA3 AND E        */ function(){A=A&E;h=1;n=c=0;z=!A;},
+      /* 0xA4 AND H        */ function(){A=A&H;h=1;n=c=0;z=!A;},
+      /* 0xA5 AND L        */ function(){A=A&L;h=1;n=c=0;z=!A;},
+      /* 0xA6 AND (HL)     */ function(){A=A&addressSpace.read(H<<8|L);h=1;n=c=0;z=!A;},
+      /* 0xA7 AND A        */ function(){A=A&A;h=1;n=c=0;z=!A;},
+      /* 0xA8 XOR B        */ function(){A=A^B;n=h=c=0;z=!A;},
+      /* 0xA9 XOR C        */ function(){A=A^C;n=h=c=0;z=!A;},
+      /* 0xAA XOR D        */ function(){A=A^D;n=h=c=0;z=!A;},
+      /* 0xAB XOR E        */ function(){A=A^E;n=h=c=0;z=!A;},
+      /* 0xAC XOR H        */ function(){A=A^H;n=h=c=0;z=!A;},
+      /* 0xAD XOR L        */ function(){A=A^L;n=h=c=0;z=!A;},
+      /* 0xAE XOR (HL)     */ function(){A=A^addressSpace.read(H<<8|L);n=h=c=0;z=!A;},
+      /* 0xAF XOR A        */ function(){A=A^A;n=h=c=0;z=!A;},
+      /* 0xB0 OR B         */ function(){A=A|B;n=h=c=0;z=!A;},
+      /* 0xB1 OR C         */ function(){A=A|C;n=h=c=0;z=!A;},
+      /* 0xB2 OR D         */ function(){A=A|D;n=h=c=0;z=!A;},
+      /* 0xB3 OR E         */ function(){A=A|E;n=h=c=0;z=!A;},
+      /* 0xB4 OR H         */ function(){A=A|H;n=h=c=0;z=!A;},
+      /* 0xB5 OR L         */ function(){A=A|L;n=h=c=0;z=!A;},
+      /* 0xB6 OR (HL)      */ function(){A=A|addressSpace.read(H<<8|L);n=h=c=0;z=!A;},
+      /* 0xB7 OR A         */ function(){A=A|A;n=h=c=0;z=!A;},
+      /* 0xB8 CP B         */ function(){let v=B;let d=A-v;n=1;c=d<0;z=!d;h=A%16-v%16<0;},
+      /* 0xB9 CP C         */ function(){let v=C;let d=A-v;n=1;c=d<0;z=!d;h=A%16-v%16<0;},
+      /* 0xBA CP D         */ function(){let v=D;let d=A-v;n=1;c=d<0;z=!d;h=A%16-v%16<0;},
+      /* 0xBB CP E         */ function(){let v=E;let d=A-v;n=1;c=d<0;z=!d;h=A%16-v%16<0;},
+      /* 0xBC CP H         */ function(){let v=H;let d=A-v;n=1;c=d<0;z=!d;h=A%16-v%16<0;},
+      /* 0xBD CP L         */ function(){let v=L;let d=A-v;n=1;c=d<0;z=!d;h=A%16-v%16<0;},
+      /* 0xBE CP (HL)      */ function(){let v=addressSpace.read(H<<8|L);let d=A-v;n=1;c=d<0;z=!d;h=A%16-v%16<0;},
+      /* 0xBF CP A         */ function(){let v=A;let d=A-v;n=1;c=d<0;z=!d;h=A%16-v%16<0;},
+      /* 0xC0 RET NZ       */ function(){if(z)cycle=8;else{PC=addressSpace.read(SP+1)<<8|addressSpace.read(SP);SP=(SP+2)%0x010000;}},
       /* 0xC1 POP BC       */ function(){C=addressSpace.read(SP++);B=addressSpace.read(SP++);},
-      /* 0xC2 JP NZ,a16    */ function(){if(!(F>>7&0b00000001)){let byte=addressSpace.read(PC+1);byte=byte<0x80?byte:(byte-0x0100);PC=PC+byte;}else cycle=12;},
+      /* 0xC2 JP NZ,a16    */ function(){if(z)cycle=12;else{let byte=addressSpace.read(PC+1);byte=byte<0x80?byte:(byte-0x0100);PC=PC+byte;}},
       /* 0xC3 JP a16       */ function(){PC=addressSpace.read(PC+2)<<8|addressSpace.read(PC+1);},
-      /* 0xC4 CALL NZ,a16  */ function(){if(!(F>>7&0b00000001)){SP=SP-2;addressSpace.write(SP,PC+1);PC=addressSpace.read(PC+2)<<8|addressSpace.read(PC+1);SP=(SP+0x010000)%0x010000;}else cycle=12;},
+      /* 0xC4 CALL NZ,a16  */ function(){if(z)cycle=12;else{SP=SP-2;addressSpace.write(SP,PC+1);PC=addressSpace.read(PC+2)<<8|addressSpace.read(PC+1);SP=(SP+0x010000)%0x010000;}},
       /* 0xC5 PUSH BC      */ function(){addressSpace.write(--SP,B);addressSpace.write(--SP,C);},
-      /* 0xC6 ADD A,d8     */ function(){let v=addressSpace.read(PC+1);let s=A+v;F=!(s%0x0100)<<7|(A%0x10+v%0x10>0x0F)<<5|(s>0xFF)<<4;A=s%0x0100;},
+      /* 0xC6 ADD A,d8     */ function(){let v=addressSpace.read(PC+1);let s=A+v;n=0;c=s>255;z=!(s%256);h=A%16+v%16>15;A=s%256;},
       /* 0xC7 RST 00H      */ function(){SP=SP-2;addressSpace.write(SP,PC+1);PC=0;SP=(SP+0x010000)%0x010000;},
-      /* 0xC8 RET Z        */ function(){if(F>>7&0b00000001){PC=addressSpace.read(SP+1)<<8|addressSpace.read(SP);SP=(SP+2)%0x010000;}else cycle=8;},
+      /* 0xC8 RET Z        */ function(){if(z){PC=addressSpace.read(SP+1)<<8|addressSpace.read(SP);SP=(SP+2)%0x010000;}else cycle=8;},
       /* 0xC9 RET          */ function(){PC=addressSpace.read(SP+1)<<8|addressSpace.read(SP);SP=(SP+2)%0x010000;},
-      /* 0xCA JP Z,a16     */ function(){if(F>>7&0b00000001){let byte=addressSpace.read(PC+1);byte=byte<0x80?byte:(byte-0x0100);PC=PC+byte;}else cycle=12;},
+      /* 0xCA JP Z,a16     */ function(){if(z){let byte=addressSpace.read(PC+1);byte=byte<0x80?byte:(byte-0x0100);PC=PC+byte;}else cycle=12;},
       /* 0xCB PREFIX CB    */ function(){},
-      /* 0xCC CALL Z,a16   */ function(){if(F>>7&0b00000001){SP=SP-2;addressSpace.write(SP,PC+1);PC=addressSpace.read(PC+2)<<8|addressSpace.read(PC+1);SP=(SP+0x010000)%0x010000;}else cycle=12;},
+      /* 0xCC CALL Z,a16   */ function(){if(z){SP=SP-2;addressSpace.write(SP,PC+1);PC=addressSpace.read(PC+2)<<8|addressSpace.read(PC+1);SP=(SP+0x010000)%0x010000;}else cycle=12;},
       /* 0xCD CALL a16     */ function(){SP=SP-2;addressSpace.write(SP,PC+1);PC=addressSpace.read(PC+2)<<8|addressSpace.read(PC+1);SP=(SP+0x010000)%0x010000;},
-      /* 0xCE ADC A,d8     */ function(){let v=addressSpace.read(PC+1)+(F>>4&0b00000001);let s=A+v;F=!(s%0x0100)<<7|(A%0x10+v%0x10>0x0F)<<5|(s>0xFF)<<4;A=s%0x0100;},
+      /* 0xCE ADC A,d8     */ function(){let v=addressSpace.read(PC+1)+c;let s=A+v;n=0;c=s>255;z=!(s%256);h=A%16+v%16>15;A=s%256;},
       /* 0xCF RST 08H      */ function(){SP=SP-2;addressSpace.write(SP,PC+1);PC=8;SP=(SP+0x010000)%0x010000;},
-      /* 0xD0 RET NC       */ function(){if(!F>>4&0b00000001){PC=addressSpace.read(SP+1)<<8|addressSpace.read(SP);SP=(SP+2)%0x010000;}else cycle=8;},
+      /* 0xD0 RET NC       */ function(){if(c)cycle=8;else{PC=addressSpace.read(SP+1)<<8|addressSpace.read(SP);SP=(SP+2)%0x010000;}},
       /* 0xD1 POP DE       */ function(){E=addressSpace.read(SP++);D=addressSpace.read(SP++);},
-      /* 0xD2 JP NC,a16    */ function(){if(!(F>>4&0b00000001)){let byte=addressSpace.read(PC+1);byte=byte<0x80?byte:(byte-0x0100);PC=PC+byte;}else cycle=12;},
+      /* 0xD2 JP NC,a16    */ function(){if(c)cycle=12;else{let byte=addressSpace.read(PC+1);byte=byte<0x80?byte:(byte-0x0100);PC=PC+byte;}},
       /* 0xD3              */ function(){},
-      /* 0xD4 CALL NC,a16  */ function(){if(!(F>>4&0b00000001)){SP=SP-2;addressSpace.write(SP,PC+1);PC=addressSpace.read(PC+2)<<8|addressSpace.read(PC+1);SP=(SP+0x010000)%0x010000;}else cycle=12;},
+      /* 0xD4 CALL NC,a16  */ function(){if(c)cycle=12;else{SP=SP-2;addressSpace.write(SP,PC+1);PC=addressSpace.read(PC+2)<<8|addressSpace.read(PC+1);SP=(SP+0x010000)%0x010000;}},
       /* 0xD5 PUSH DE      */ function(){addressSpace.write(--SP,D);addressSpace.write(--SP,E);},
-      /* 0xD6 SUB d8       */ function(){let v=addressSpace.read(PC+1);let diff=A-v;F=!diff<<7|0b01000000|(A%16-v%16<0)<<5|(diff<0)<<4;A=(diff+0x0100)%0x0100;},
+      /* 0xD6 SUB d8       */ function(){let v=addressSpace.read(PC+1);let d=A-v;n=1;c=d<0;z=!d;h=A%16-v%16<0;A=(d+0x0100)%0x0100;},
       /* 0xD7 RST 10H      */ function(){SP=SP-2;addressSpace.write(SP,PC+1);PC=16;SP=(SP+0x010000)%0x010000;},
-      /* 0xD8 RET C        */ function(){if(F>>4&0b00000001){PC=addressSpace.read(SP+1)<<8|addressSpace.read(SP);SP=(SP+2)%0x010000;}else cycle=8;},
-      /* 0xD9 RETI         */ function(){DELAYED_JUMP(StackPopWord());IME=1;},
-      /* 0xDA JP C,a16     */ function(){if(F>>4&0b00000001){let byte=addressSpace.read(PC+1);byte=byte<0x80?byte:(byte-0x0100);PC=PC+byte;}else cycle=12;},
+      /* 0xD8 RET C        */ function(){if(c){PC=addressSpace.read(SP+1)<<8|addressSpace.read(SP);SP=(SP+2)%0x010000;}else cycle=8;},
+      /* 0xD9 RETI         */ function(){IME=true;PC=addressSpace.read(SP+1)<<8|addressSpace.read(SP);SP=(SP+2)%0x010000;},
+      /* 0xDA JP C,a16     */ function(){if(c){let byte=addressSpace.read(PC+1);byte=byte<0x80?byte:(byte-0x0100);PC=PC+byte;}else cycle=12;},
       /* 0xDB              */ function(){},
-      /* 0xDC CALL C,a16   */ function(){if(F>>4&0b00000001){SP=SP-2;addressSpace.write(SP,PC+1);PC=addressSpace.read(PC+2)<<8|addressSpace.read(PC+1);SP=(SP+0x010000)%0x010000;}else cycle=12;},
+      /* 0xDC CALL C,a16   */ function(){if(c){SP=SP-2;addressSpace.write(SP,PC+1);PC=addressSpace.read(PC+2)<<8|addressSpace.read(PC+1);SP=(SP+0x010000)%0x010000;}else cycle=12;},
       /* 0xDD              */ function(){},
-      /* 0xDE SBC A,d8     */ function(){let v=d8+(F>>4&0b00000001);let diff=A-v;F=!diff<<7|0b01000000|(A%16-v%16<0)<<5|(diff<0)<<4;A=(diff+0x0100)%0x0100;},
+      /* 0xDE SBC A,d8     */ function(){let v=d8+c;let d=A-v;n=1;c=d<0;z=!d;h=A%16-v%16<0;A=(d+0x0100)%0x0100;},
       /* 0xDF RST 18H      */ function(){SP=SP-2;addressSpace.write(SP,PC+1);PC=24;SP=(SP+0x010000)%0x010000;},
       /* 0xE0 LDH (a8),A   */ function(){addressSpace.write(0xFF<<8|addressSpace.read(PC+1),A);},
       /* 0xE1 POP HL       */ function(){L=addressSpace.read(SP++);H=addressSpace.read(SP++);},
@@ -373,15 +355,15 @@ export function initLR35902(addressSpace) {
       /* 0xE3              */ function(){},
       /* 0xE4              */ function(){},
       /* 0xE5 PUSH HL      */ function(){addressSpace.write(--SP,H);addressSpace.write(--SP,L);},
-      /* 0xE6 AND d8       */ function(){A=A&addressSpace.read(PC+1);F=!A<<7|0b00100000;},
+      /* 0xE6 AND d8       */ function(){A=A&addressSpace.read(PC+1);h=1;n=c=0;z=!A;},
       /* 0xE7 RST 20H      */ function(){SP=SP-2;addressSpace.write(SP,PC+1);PC=32;SP=(SP+0x010000)%0x010000;},
-      /* 0xE8 ADD SP,r8    */ function(){let data=addressSpace.read(PC+1);data=data<0x80?data:(data-0x0100);if(data<0)data=data+0x010000;F=F&0xB0;F=((SP+data>0xFFFF)<<4)|F&0xEF;F=(((SP%0x1000)+data%0x1000>0x0FFF)<<5)|F&0xDF;SP=(SP+data)%0x010000;F=F&0x70},
+      /* 0xE8 ADD SP,r8    */ function(){let v=addressSpace.read(PC+1);v=v<0x80?v:(v-0x0100);if(v<0)v=v+0x010000;let s=SP+v;n=0;c=s>255;h=SP%16+v%16>15;SP=s%256;z=0;},
       /* 0xE9 JP (HL)      */ function(){PC=H<<8|L},
       /* 0xEA LD (a16),A   */ function(){addressSpace.write(addressSpace.read(PC+2)<<8|addressSpace.read(PC+1),A);},
       /* 0xEB              */ function(){},
       /* 0xEC              */ function(){},
       /* 0xED              */ function(){},
-      /* 0xEE XOR d8       */ function(){A=A^addressSpace.read(PC+1);F=!A<<7;},
+      /* 0xEE XOR d8       */ function(){A=A^addressSpace.read(PC+1);n=h=c=0;z=!A;},
       /* 0xEF RST 28H      */ function(){SP=SP-2;addressSpace.write(SP,PC+1);PC=40;SP=(SP+0x010000)%0x010000;},
       /* 0xF0 LDH A,(a8)   */ function(){A=addressSpace.read(0xFF00|addressSpace.read(PC+1));},
       /* 0xF1 POP AF       */ function(){F=addressSpace.read(SP++);A=addressSpace.read(SP++);},
@@ -389,23 +371,27 @@ export function initLR35902(addressSpace) {
       /* 0xF3 DI           */ function(){IME=false;},
       /* 0xF4              */ function(){},
       /* 0xF5 PUSH AF      */ function(){addressSpace.write(--SP,A);addressSpace.write(--SP,F);},
-      /* 0xF6 OR d8        */ function(){A=A|addressSpace.read(PC+1);F=!A<<7;},
+      /* 0xF6 OR d8        */ function(){A=A|addressSpace.read(PC+1);n=h=c=0;z=!A;},
       /* 0xF7 RST 30H      */ function(){SP=SP-2;addressSpace.write(SP,PC+1);PC=48;SP=(SP+0x010000)%0x010000;},
-      /* 0xF8 LD HL,SP+r8  */ function(){let data=addressSpace.read(PC+1);data=data<0x80?data:(data-0x0100);if(data<0)data=data+0x010000;F=F&0xB0;F=((SP+data>0xFFFF)<<4)|F&0xEF;F=(((SP%0x1000)+data%0x1000>0x0FFF)<<5)|F&0xDF;let HL=(SP+data)%0x010000;H=HL>>>8;L=HL&0xFF;F=F&0x70},
+      /* 0xF8 LD HL,SP+r8  */ function(){let v=addressSpace.read(PC+1);v=v<0x80?v:(v-0x0100);let s=SP+v;if(v<0)v+=65536;n=0;c=s>65535;h=(SP%4096)+(v%4096)>4095;let HL=s%65536;H=HL>>>8;L=HL&0xFF;z=0;},
       /* 0xF9 LD SP,HL     */ function(){SP=H<<8|L;},
       /* 0xFA LD A,(a16)   */ function(){A=addressSpace.read(addressSpace.read(PC+2)<<8|addressSpace.read(PC+1));},
-      /* 0xFB EI           */ function(){IME=true;interrupt();},
+      /* 0xFB EI           */ function(){IME=true;     ;},
       /* 0xFC              */ function(){},
       /* 0xFD              */ function(){},
-      /* 0xFE CP d8        */ function(){let v=addressSpace.read(PC+1);let diff=A-v;F=!diff<<7|0b01000000|(A%16-v%16<0)<<5|(diff<0)<<4;},
-      /* 0xFF RST 38H      */ function(){SP=SP-2;addressSpace.write(SP,PC+1);PC=56;SP=(SP+0x010000)%0x010000;}
-   ];
+      /* 0xFE CP d8        */ function(){let v=addressSpace.read(PC+1);let d=A-v;n=1;c=d<0;z=!d;h=A%16-v%16<0;},
+      /* 0xFF RST 38H      */ function(){SP=SP-2;addressSpace.write(SP,PC+1);PC=56;SP=(SP+0x010000)%0x010000;} 
+    ];
 
-   return {
-      run: function() {
+    const OPCODES_EX = [
+ 
+    ];
 
-   // Instruction Extender (0xCB)
+    return {
+       run: function() {
 
-      }
-   };
+       // Instruction Extender (0xCB)
+
+       }
+    };
 }

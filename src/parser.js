@@ -55,18 +55,18 @@
                                 /* 0x24 INC H */
                                 /* 0x2C INC L */
                                 /* 0x3C INC A */
-                                elem = "F=F&0x90;if("+_mnem[1]+">0xFE){F=F|0x60;"+_mnem[1]+"=0;}else{F=F&0x70;if("+_mnem[1]+"%0x10==0x0F)F=F|0x20;"+_mnem[1]+"++;}";
+                                elem = "n=0;z=h="+_mnem[1]+">0xFE;if(z)"+_mnem[1]+"=0;else{h="+_mnem[1]+"%16==15;"+_mnem[1]+"+=1;}";
                             break;
                             case "(HL)": 
                                 /* 0x34 INC (HL) */
-                                elem = "let HL=H<<8|L;addressSpace.write(HL,addressSpace.read(HL)+1);";
+                                elem = "let HL=H<<8|L;let v=addressSpace.read(HL);n=0;z=h=v>0xFE;if(z)v=0;else{h=v%16==15;v+=1;}addressSpace.write(HL,v);";
                             break;
                             default: 
                                 /* 0x03 INC BC */
                                 /* 0x13 INC DE */
                                 /* 0x23 INC HL */
                                 /* 0x33 INC SP */
-                                elem = "let val="+_mnem[1][0]+"<<8|"+_mnem[1][1]+"+1;"+_mnem[1][0]+"=val>>>8;"+_mnem[1][1]+"=val&0xFF;";
+                                elem = "if(++"+_mnem[1][1]+">0xFF){"+_mnem[1][1]+"=0;if(++"+_mnem[1][0]+">0xFF)"+_mnem[1][0]+"=0;}";
                         } 
                     break;
                     case "DEC":
@@ -79,18 +79,18 @@
                                 /* 0x25 DEC H */
                                 /* 0x2D DEC L */
                                 /* 0x3D DEC A */
-                                elem = "F=F&0xD0|0x40;if("+_mnem[1]+"==0){F=F&0x70|0x20;"+_mnem[1]+"=0xFF;}else if("+_mnem[1]+"==1){F=F|0x80;}else{F=F&0x70;if("+_mnem[1]+"%0x10==0)F=F|0x20;"+_mnem[1]+"--;}";
+                                elem = "n=1;if("+_mnem[1]+"==0){z=0;h=1;"+_mnem[1]+"=0xFF;}else if("+_mnem[1]+"==1){z=1;h=0;"+_mnem[1]+"=0;}else{z=0;h="+_mnem[1]+"%16==0;"+_mnem[1]+"-=1;}";
                             break;
                             case "(HL)": 
                                 /* 0x35 DEC (HL) */
-                                elem = "let HL=H<<8|L;addressSpace.write(HL,addressSpace.read(HL)-1);";
+                                elem = "let HL=H<<8|L;let v=addressSpace.read(HL);n=1;if(v==0){z=0;h=1;v=0xFF;}else if(v==1){z=1;h=0;v=0;}else{z=0;h=v%16==0;v-=1;}addressSpace.write(HL,v);";
                             break;
                             default: 
                                 /* 0x0B DEC BC */
                                 /* 0x1B DEC DE */
                                 /* 0x2B DEC HL */
                                 /* 0x3B DEC SP */
-                                elem = "let val="+_mnem[1][0]+"<<8|"+_mnem[1][1]+"-1;"+_mnem[1][0]+"=val>>>8;"+_mnem[1][1]+"=val&0xFF;";
+                                elem = "if(--"+_mnem[1][1]+"<0){"+_mnem[1][1]+"=0xFF;if(--"+_mnem[1][0]+"<0)"+_mnem[1][0]+"=0xFF;}";
                         } 
                     break;
                     case "LD":                        
@@ -215,7 +215,7 @@
                                 elem = _mnem[1][1]+"=addressSpace.read(PC+1);"+_mnem[1][0]+"=addressSpace.read(PC+2);";
                             } else if (_mnem[1] == "HL,SP+r8") {                      
                                 /* 0xF8 LD HL,SP+r8 */
-                                elem = "let data=addressSpace.read(PC+1);data=data<0x80?data:(data-0x0100);if(data<0)data=data+0x010000;F=F&0xB0;F=((SP+data>0xFFFF)<<4)|F&0xEF;F=(((SP%0x1000)+data%0x1000>0x0FFF)<<5)|F&0xDF;let HL=(SP+data)%0x010000;H=HL>>>8;L=HL&0xFF;F=F&0x70";
+                                elem = "let v=addressSpace.read(PC+1);v=v<0x80?v:(v-0x0100);let s=SP+v;if(v<0)v+=65536;n=0;c=s>65535;h=(SP%4096)+(v%4096)>4095;let HL=s%65536;H=HL>>>8;L=HL&0xFF;z=0;";
                             } else if (_mnem[1] == "SP,HL") {
                                 /* 0xF9 LD SP,HL */
                                 elem = "SP=H<<8|L;";
@@ -239,13 +239,13 @@
                                     /* 0x84 ADD A,H */
                                     /* 0x85 ADD A,L */
                                     /* 0x87 ADD A,A */
-                                    elem = "let v="+params[1]+";let s=A+v;F=!(s%0x0100)<<7|(A%0x10+v%0x10>0x0F)<<5|(s>0xFF)<<4;A=s%0x0100;";
+                                    elem = "let v="+params[1]+";let s=A+v;n=0;c=s>255;z=!(s%256);h=A%16+v%16>15;A=s%256;";
                                 } else if (params[1] == "(HL)") {
                                     /* 0x86 ADD A,(HL) */
-                                    elem = "let v=addressSpace.read(H<<8|L);let s=A+v;F=!(s%0x0100)<<7|(A%0x10+v%0x10>0x0F)<<5|(s>0xFF)<<4;A=s%0x0100;";
+                                    elem = "let v=addressSpace.read(H<<8|L);let s=A+v;n=0;c=s>255;z=!(s%256);h=A%16+v%16>15;A=s%256;";
                                 } else if (params[1] == "d8") {
                                     /* 0xC6 ADD A,d8 */
-                                    elem = "let v=addressSpace.read(PC+1);let s=A+v;F=!(s%0x0100)<<7|(A%0x10+v%0x10>0x0F)<<5|(s>0xFF)<<4;A=s%0x0100;";
+                                    elem = "let v=addressSpace.read(PC+1);let s=A+v;n=0;c=s>255;z=!(s%256);h=A%16+v%16>15;A=s%256;";
                                 }                                
                             } else if (REGISTERS_16_BIT.indexOf(params[0]) != -1) {
                                 if (REGISTERS_16_BIT.indexOf(params[1]) != -1) {
@@ -253,10 +253,10 @@
                                     /* 0x19 ADD HL,DE */
                                     /* 0x29 ADD HL,HL */
                                     /* 0x39 ADD HL,SP */
-                                    elem = "let "+params[0]+"="+params[0][0]+"<<8|"+params[0][1]+";let "+params[1]+"="+params[1][0]+"<<8|"+params[1][1]+";if("+params[1]+"<0)"+params[1]+"="+params[1]+"+0x010000;F=F&0xB0;F=(("+params[0]+"+"+params[1]+">0xFFFF)<<4)|F&0xEF;F=((("+params[0]+"%0x1000)+"+params[1]+"%0x1000>0x0FFF)<<5)|F&0xDF;"+params[0]+"=("+params[0]+"+"+params[1]+")%0x010000;"+params[0][0]+"="+params[0]+">>>8;"+params[0][1]+"="+params[0]+"&0xFF;F=F&0x70";
+                                    elem = "let "+params[0]+"="+params[0][0]+"<<8|"+params[0][1]+";let "+params[1]+"="+params[1][0]+"<<8|"+params[1][1]+";let s="+params[0]+"+"+params[1]+";if("+params[1]+"<0)"+params[1]+"+=65536;n=0;c=s>65535;h="+params[0]+"%4096+"+params[1]+"%4096>4095;"+params[0]+"=s%65536;";
                                 } else if (params[1] == "r8") {
                                     /* 0xE8 ADD SP,r8 */
-                                    elem = "let data=addressSpace.read(PC+1);data=data<0x80?data:(data-0x0100);if(data<0)data=data+0x010000;F=F&0xB0;F=((SP+data>0xFFFF)<<4)|F&0xEF;F=(((SP%0x1000)+data%0x1000>0x0FFF)<<5)|F&0xDF;SP=(SP+data)%0x010000;F=F&0x70";
+                                    elem = "let v=addressSpace.read(PC+1);v=v<0x80?v:(v-0x0100);if(v<0)v=v+0x010000;let s=SP+v;n=0;c=s>255;h=SP%16+v%16>15;SP=s%256;z=0;";
                                 }
                             }
                         }
@@ -270,13 +270,13 @@
                             /* 0x8C ADC A,H */
                             /* 0x8D ADC A,L */
                             /* 0x8F ADC A,A */
-                            elem = "let v="+params[1]+"+(F>>4&0b00000001);let s=A+v;F=!(s%0x0100)<<7|(A%0x10+v%0x10>0x0F)<<5|(s>0xFF)<<4;A=s%0x0100;";
+                            elem = "let v="+params[1]+"+c;let s=A+v;n=0;c=s>255;z=!(s%256);h=A%16+v%16>15;A=s%256;";
                         } else if (params[1] == "(HL)") {
                             /* 0x8E ADC A,(HL) */
-                            elem = "let v=addressSpace.read(H<<8|L)+(F>>4&0b00000001);let s=A+v;F=!(s%0x0100)<<7|(A%0x10+v%0x10>0x0F)<<5|(s>0xFF)<<4;A=s%0x0100;";
+                            elem = "let v=addressSpace.read(H<<8|L)+c;let s=A+v;n=0;c=s>255;z=!(s%256);h=A%16+v%16>15;A=s%256;";
                         } else if (params[1] == "d8") {
                             /* 0xCE ADC A,d8 */
-                            elem = "let v=addressSpace.read(PC+1)+(F>>4&0b00000001);let s=A+v;F=!(s%0x0100)<<7|(A%0x10+v%0x10>0x0F)<<5|(s>0xFF)<<4;A=s%0x0100;";
+                            elem = "let v=addressSpace.read(PC+1)+c;let s=A+v;n=0;c=s>255;z=!(s%256);h=A%16+v%16>15;A=s%256;";
                         }
                     break;    
                     case "SUB":
@@ -288,13 +288,13 @@
                             /* 0x94 SUB H */
                             /* 0x95 SUB L */
                             /* 0x97 SUB A */
-                            elem = "let v="+_mnem[1]+";let diff=A-v;F=!diff<<7|0b01000000|(A%16-v%16<0)<<5|(diff<0)<<4;A=(diff+0x0100)%0x0100;";
+                            elem = "let v="+_mnem[1]+";let d=A-v;n=1;c=d<0;z=!d;h=A%16-v%16<0;A=(d+0x0100)%0x0100;";
                         } else if (_mnem[1] == "(HL)") {
                             /* 0x96 SUB (HL) */
-                            elem = "let v=addressSpace.read(H<<8|L);let diff=A-v;F=!diff<<7|0b01000000|(A%16-v%16<0)<<5|(diff<0)<<4;A=(diff+0x0100)%0x0100;";
+                            elem = "let v=addressSpace.read(H<<8|L);let d=A-v;n=1;c=d<0;z=!d;h=A%16-v%16<0;A=(d+0x0100)%0x0100;";
                         } else if (_mnem[1] == "d8") {
                             /* 0xD6 SUB d8 */
-                            elem = "let v=addressSpace.read(PC+1);let diff=A-v;F=!diff<<7|0b01000000|(A%16-v%16<0)<<5|(diff<0)<<4;A=(diff+0x0100)%0x0100;";
+                            elem = "let v=addressSpace.read(PC+1);let d=A-v;n=1;c=d<0;z=!d;h=A%16-v%16<0;A=(d+0x0100)%0x0100;";
                         }
                     break;    
                     case "SBC":    
@@ -306,13 +306,13 @@
                             /* 0x9C SBC A,H */
                             /* 0x9D SBC A,L */
                             /* 0x9F SBC A,A */
-                            elem = "let v="+params[1]+"+(F>>4&0b00000001);let diff=A-v;F=!diff<<7|0b01000000|(A%16-v%16<0)<<5|(diff<0)<<4;A=(diff+0x0100)%0x0100;";
+                            elem = "let v="+params[1]+"+c;let d=A-v;n=1;c=d<0;z=!d;h=A%16-v%16<0;A=(d+0x0100)%0x0100;";
                         } else if (params[0] == "(HL)") {
                             /* 0x9E SBC A,(HL) */
-                            elem = "let v=addressSpace.read(H<<8|L)+(F>>4&0b00000001);let diff=A-v;F=!diff<<7|0b01000000|(A%16-v%16<0)<<5|(diff<0)<<4;A=(diff+0x0100)%0x0100;";
+                            elem = "let v=addressSpace.read(H<<8|L)+c;let d=A-v;n=1;c=d<0;z=!d;h=A%16-v%16<0;A=(d+0x0100)%0x0100;";
                         } else if (params[0] == "d8") {
                             /* 0xDE SBC A,d8 */   
-                            elem = "let v=addressSpace.read(PC+1)+(F>>4&0b00000001);let diff=A-v;F=!diff<<7|0b01000000|(A%16-v%16<0)<<5|(diff<0)<<4;A=(diff+0x0100)%0x0100;";
+                            elem = "let v=addressSpace.read(PC+1)+c;let d=A-v;n=1;c=d<0;z=!d;h=A%16-v%16<0;A=(d+0x0100)%0x0100;";
                         }
                     break;    
                     case "AND":    
@@ -324,13 +324,13 @@
                             /* 0xA4 AND H */
                             /* 0xA5 AND L */
                             /* 0xA7 AND A */
-                            elem = "A=A&"+_mnem[1]+";F=!A<<7|0b00100000;";
+                            elem = "A=A&"+_mnem[1]+";h=1;n=c=0;z=!A;";
                         } else if (_mnem[1] == "(HL)") {
                             /* 0xA6 AND (HL) */
-                            elem = "A=A&addressSpace.read(H<<8|L);F=!A<<7|0b00100000;";
+                            elem = "A=A&addressSpace.read(H<<8|L);h=1;n=c=0;z=!A;";
                         } else if (_mnem[1] == "d8") {
                             /* 0xE6 AND d8 */                    
-                            elem = "A=A&addressSpace.read(PC+1);F=!A<<7|0b00100000;";
+                            elem = "A=A&addressSpace.read(PC+1);h=1;n=c=0;z=!A;";
                         }
                     break;    
                     case "XOR":    
@@ -342,13 +342,13 @@
                             /* 0xAC XOR H */
                             /* 0xAD XOR L */
                             /* 0xAF XOR A */
-                            elem = "A=A^"+_mnem[1]+";F=!A<<7;";
+                            elem = "A=A^"+_mnem[1]+";n=h=c=0;z=!A;";
                         } else if (_mnem[1] == "(HL)") {
                             /* 0xAE XOR (HL) */
-                            elem = "A=A^addressSpace.read(H<<8|L);F=!A<<7;";
+                            elem = "A=A^addressSpace.read(H<<8|L);n=h=c=0;z=!A;";
                         } else if (_mnem[1] == "d8") {
                             /* 0xEE XOR d8 */                    
-                            elem = "A=A^addressSpace.read(PC+1);F=!A<<7;";
+                            elem = "A=A^addressSpace.read(PC+1);n=h=c=0;z=!A;";
                         }
                     break;    
                     case "OR":     
@@ -360,13 +360,13 @@
                             /* 0xB4 OR H */
                             /* 0xB5 OR L */
                             /* 0xB7 OR A */
-                            elem = "A=A|"+_mnem[1]+";F=!A<<7;";
+                            elem = "A=A|"+_mnem[1]+";n=h=c=0;z=!A;";
                         } else if (_mnem[1] == "(HL)") {
                             /* 0xB6 OR (HL) */
-                            elem = "A=A|addressSpace.read(H<<8|L);F=!A<<7;";
+                            elem = "A=A|addressSpace.read(H<<8|L);n=h=c=0;z=!A;";
                         } else if (_mnem[1] == "d8") {
                             /* 0xF6 OR d8 */                    
-                            elem = "A=A|addressSpace.read(PC+1);F=!A<<7;";
+                            elem = "A=A|addressSpace.read(PC+1);n=h=c=0;z=!A;";
                         }
                     break;   
                     case "CP":     
@@ -378,38 +378,38 @@
                             /* 0xBC CP H */
                             /* 0xBD CP L */
                             /* 0xBF CP A */
-                            elem = "let v="+_mnem[1]+";let diff=A-v;F=!diff<<7|0b01000000|(A%16-v%16<0)<<5|(diff<0)<<4;";
+                            elem = "let v="+_mnem[1]+";let d=A-v;n=1;c=d<0;z=!d;h=A%16-v%16<0;";
                         } else if (_mnem[1] == "(HL)") {
                             /* 0xBE CP (HL) */
-                            elem = "let v=addressSpace.read(H<<8|L);let diff=A-v;F=!diff<<7|0b01000000|(A%16-v%16<0)<<5|(diff<0)<<4;";
+                            elem = "let v=addressSpace.read(H<<8|L);let d=A-v;n=1;c=d<0;z=!d;h=A%16-v%16<0;";
                         } else if (_mnem[1] == "d8") {
                             /* 0xFE CP d8 */
-                            elem = "let v=addressSpace.read(PC+1);let diff=A-v;F=!diff<<7|0b01000000|(A%16-v%16<0)<<5|(diff<0)<<4;";
+                            elem = "let v=addressSpace.read(PC+1);let d=A-v;n=1;c=d<0;z=!d;h=A%16-v%16<0;";
                         }
                     break;   
                     case "RET":   
                         switch(_mnem[1]) {
                             case "NZ":
                                 /* 0xC0 RET NZ */
-                                elem = "if(!F>>7&0b00000001){PC=addressSpace.read(SP+1)<<8|addressSpace.read(SP);SP=(SP+2)%0x010000;}else cycle=8;";
+                                elem = "if(z)cycle=8;else{PC=addressSpace.read(SP+1)<<8|addressSpace.read(SP);SP=(SP+2)%0x010000;}";
                             break;
                             case "Z":
                                 /* 0xC8 RET Z */
-                                elem = "if(F>>7&0b00000001){PC=addressSpace.read(SP+1)<<8|addressSpace.read(SP);SP=(SP+2)%0x010000;}else cycle=8;";
+                                elem = "if(z){PC=addressSpace.read(SP+1)<<8|addressSpace.read(SP);SP=(SP+2)%0x010000;}else cycle=8;";
                             break;
                             case "NC":
                                 /* 0xD0 RET NC */
-                                elem = "if(!F>>4&0b00000001){PC=addressSpace.read(SP+1)<<8|addressSpace.read(SP);SP=(SP+2)%0x010000;}else cycle=8;";
+                                elem = "if(c)cycle=8;else{PC=addressSpace.read(SP+1)<<8|addressSpace.read(SP);SP=(SP+2)%0x010000;}";
                             break;
                             case "C":
                                 /* 0xD8 RET C */
-                                elem = "if(F>>4&0b00000001){PC=addressSpace.read(SP+1)<<8|addressSpace.read(SP);SP=(SP+2)%0x010000;}else cycle=8;";
+                                elem = "if(c){PC=addressSpace.read(SP+1)<<8|addressSpace.read(SP);SP=(SP+2)%0x010000;}else cycle=8;";
                             break;
                         }
                     break;    
                     case "STOP":   
                         /* 0x10 STOP 0 */
-                        elem = "stopped=1;";
+                        elem = "stopped=true;";
                     break;   
                     case "JR":
                         switch (_mnem[1]) {
@@ -419,19 +419,19 @@
                             break;
                             case "NZ,r8":
                                 /* 0x20 JR NZ,r8 */
-                                elem = "if(!(F>>7&0b00000001)){let byte=addressSpace.read(PC+1);byte=byte<0x80?byte:(byte-0x0100);PC=PC+byte;}else cycle=8;";
+                                elem = "if(z)cycle=8;else{let byte=addressSpace.read(PC+1);byte=byte<0x80?byte:(byte-0x0100);PC=PC+byte;}";
                             break;
                             case "Z,r8":
                                 /* 0x28 JR Z,r8 */
-                                elem = "if(F>>7&0b00000001){let byte=addressSpace.read(PC+1);byte=byte<0x80?byte:(byte-0x0100);PC=PC+byte;}else cycle=8;";
+                                elem = "if(z){let byte=addressSpace.read(PC+1);byte=byte<0x80?byte:(byte-0x0100);PC=PC+byte;}else cycle=8;";
                             break;
                             case "NC,r8":
                                 /* 0x30 JR NC,r8 */
-                                elem = "if(!(F>>4&0b00000001)){let byte=addressSpace.read(PC+1);byte=byte<0x80?byte:(byte-0x0100);PC=PC+byte;}else cycle=8;";
+                                elem = "if(c)cycle=8;else{let byte=addressSpace.read(PC+1);byte=byte<0x80?byte:(byte-0x0100);PC=PC+byte;}";
                             break;
                             case "C,r8":
                                 /* 0x38 JR C,r8 */
-                                elem = "if(F>>4&0b00000001){let byte=addressSpace.read(PC+1);byte=byte<0x80?byte:(byte-0x0100);PC=PC+byte;}else cycle=8;";
+                                elem = "if(c){let byte=addressSpace.read(PC+1);byte=byte<0x80?byte:(byte-0x0100);PC=PC+byte;}else cycle=8;";
                             break;
                         }                        
                     break;   
@@ -439,7 +439,7 @@
                         switch (_mnem[1]) {
                             case "NZ,a16":
                                 /* 0xC2 JP NZ,a16 */
-                                elem = "if(!(F>>7&0b00000001)){let byte=addressSpace.read(PC+1);byte=byte<0x80?byte:(byte-0x0100);PC=PC+byte;}else cycle=12;";
+                                elem = "if(z)cycle=12;else{let byte=addressSpace.read(PC+1);byte=byte<0x80?byte:(byte-0x0100);PC=PC+byte;}";
                             break;
                             case "a16":
                                 /* 0xC3 JP a16 */
@@ -447,15 +447,15 @@
                             break;
                             case "Z,a16":
                                 /* 0xCA JP Z,a16 */
-                                elem = "if(F>>7&0b00000001){let byte=addressSpace.read(PC+1);byte=byte<0x80?byte:(byte-0x0100);PC=PC+byte;}else cycle=12;";
+                                elem = "if(z){let byte=addressSpace.read(PC+1);byte=byte<0x80?byte:(byte-0x0100);PC=PC+byte;}else cycle=12;";
                             break;
                             case "NC,a16":
                                 /* 0xD2 JP NC,a16 */
-                                elem = "if(!(F>>4&0b00000001)){let byte=addressSpace.read(PC+1);byte=byte<0x80?byte:(byte-0x0100);PC=PC+byte;}else cycle=12;";
+                                elem = "if(c)cycle=12;else{let byte=addressSpace.read(PC+1);byte=byte<0x80?byte:(byte-0x0100);PC=PC+byte;}";
                             break;
                             case "C,a16":
                                 /* 0xDA JP C,a16 */
-                                elem = "if(F>>4&0b00000001){let byte=addressSpace.read(PC+1);byte=byte<0x80?byte:(byte-0x0100);PC=PC+byte;}else cycle=12;";
+                                elem = "if(c){let byte=addressSpace.read(PC+1);byte=byte<0x80?byte:(byte-0x0100);PC=PC+byte;}else cycle=12;";
                             break;
                             case "(HL)":
                                 /* 0xE9 JP (HL) */
@@ -467,11 +467,11 @@
                         switch (_mnem[1]) {
                             case "NZ,a16":
                                 /* 0xC4 CALL NZ,a16 */
-                                elem = "if(!(F>>7&0b00000001)){SP=SP-2;addressSpace.write(SP,PC+1);PC=addressSpace.read(PC+2)<<8|addressSpace.read(PC+1);SP=(SP+0x010000)%0x010000;}else cycle=12;";
+                                elem = "if(z)cycle=12;else{SP=SP-2;addressSpace.write(SP,PC+1);PC=addressSpace.read(PC+2)<<8|addressSpace.read(PC+1);SP=(SP+0x010000)%0x010000;}";
                             break;
                             case "Z,a16":
                                 /* 0xCC CALL Z,a16 */
-                                elem = "if(F>>7&0b00000001){SP=SP-2;addressSpace.write(SP,PC+1);PC=addressSpace.read(PC+2)<<8|addressSpace.read(PC+1);SP=(SP+0x010000)%0x010000;}else cycle=12;";
+                                elem = "if(z){SP=SP-2;addressSpace.write(SP,PC+1);PC=addressSpace.read(PC+2)<<8|addressSpace.read(PC+1);SP=(SP+0x010000)%0x010000;}else cycle=12;";
                             break;
                             case "a16":
                                 /* 0xCD CALL a16 */
@@ -479,11 +479,11 @@
                             break;
                             case "NC,a16":
                                 /* 0xD4 CALL NC,a16 */
-                                elem = "if(!(F>>4&0b00000001)){SP=SP-2;addressSpace.write(SP,PC+1);PC=addressSpace.read(PC+2)<<8|addressSpace.read(PC+1);SP=(SP+0x010000)%0x010000;}else cycle=12;";
+                                elem = "if(c)cycle=12;else{SP=SP-2;addressSpace.write(SP,PC+1);PC=addressSpace.read(PC+2)<<8|addressSpace.read(PC+1);SP=(SP+0x010000)%0x010000;}";
                             break;
                             case "C,a16":
                                 /* 0xDC CALL C,a16 */
-                                elem = "if(F>>4&0b00000001){SP=SP-2;addressSpace.write(SP,PC+1);PC=addressSpace.read(PC+2)<<8|addressSpace.read(PC+1);SP=(SP+0x010000)%0x010000;}else cycle=12;";
+                                elem = "if(c){SP=SP-2;addressSpace.write(SP,PC+1);PC=addressSpace.read(PC+2)<<8|addressSpace.read(PC+1);SP=(SP+0x010000)%0x010000;}else cycle=12;";
                             break;
                         }
                     break;     
@@ -545,52 +545,35 @@
                     break;
                     case "DAA":
                         /* 0x27 DAA */
-                        // if(FN){
-                        //          if( !FC & !FH & (A>>4 < 10) & (A%16 < 10) ) { FC = 0;}
-                        //     else if( !FC &  FH & (A>>4 < 9 ) & (A%16 >  5) ) { FC = 0; A=A+0xFA }
-                        //     else if(  FC & !FH & (A>>4 > 6 ) & (A%16 < 10) ) { FC = 1; A=A+0xA0 }
-                        //     else if(  FC &  FH & (A>>4 > 5 ) & (A%16 >  5) ) { FC = 1; A=A+0x9A }
-                        // }else{
-                        //         if( !FC & !FH & (A>>4 < 10) & (A%16 < 10) ) { FC = 0;}
-                        //    else if( !FC & !FH & (A>>4 <  9) & (A%16 >  9) ) { FC = 0; A=A+0x06 }
-                        //    else if( !FC &  FH & (A>>4 < 10) & (A%16 <  4) ) { FC = 0; A=A+0x06 }
-                        //    else if( !FC & !FH & (A>>4 >  9) & (A%16 < 10) ) { FC = 1; A=A+0x60 }
-                        //    else if( !FC & !FH & (A>>4 >  8) & (A%16 >  9) ) { FC = 1; A=A+0x66 }
-                        //    else if( !FC &  FH & (A>>4 >  9) & (A%16 <  4) ) { FC = 1; A=A+0x66 }
-                        //    else if(  FC & !FH & (A>>4 <  3) & (A%16 < 10) ) { FC = 1; A=A+0x60 }
-                        //    else if(  FC & !FH & (A>>4 <  3) & (A%16 >  9) ) { FC = 1; A=A+0x66 }
-                        //    else if(  FC &  FH & (A>>4 <  4) & (A%16 <  4) ) { FC = 1; A=A+0x66 }
-                        // }
-                        // A = A%256;
-                        elem = "if(F>>6&0b00000001){if(F>>5&0b00000001||(A&0x0F)>9)A+=0x06;if(F>>4&0b00000001||A>0x9F)A+=0x60;}else{if(F>>5&0b00000001)A=(A-6)&0xFF;if(F>>4&0b00000001)A-=0x60;}F&=0b11010000;if((A&0x0100)==0x0100)F|=0b00010000;A&=0xFF;F=!A<<7|F&0b01110000;";
+                        elem = "DAA();";
                     break;
                     case "RRA":
                         /* 0x1F RRA */
-                        elem = "let bit=A&0b00000001;A=A>>1|F>>4&0b00000001;F=bit<<4|F&0b00000000;";
+                        elem = "cbinstruction(31);";
                     break;
                     case "RLA":
                         /* 0x17 RLA */
-                        elem = "let bit=A>>7;A=A<<1|F>>4&0b00000001;F=bit<<4|F&0b00000000;";
+                        elem = "cbinstruction(23);";
                     break;
                     case "RLCA":
                         /* 0x07 RLCA */
-                        elem = "let bit=A>>7;A=A<<1|bit; F=((~(A|~A+1)>>31&0b00000001)<<7|F&0b01110000)&(bit<<4|F&0b10000000);";
+                        elem = "cbinstruction(7);";
                     break;
                     case "RRCA":
                         /* 0x0F RRCA */
-                        elem = "let bit=A&0b00000001;A=A>>1|bit<<7;F=bit<<4|F&0b00000000;";
+                        elem = "cbinstruction(15);";
                     break;
                     case "CCF":    
                         /* 0x3F CCF */
-                        elem = "F=!(F>>4&0b00000001)<<4|F&0b10000000;";
+                        elem = "c=1-c;n=h=0;";
                     break;
                     case "SCF":    
                         /* 0x37 SCF */
-                        elem = "F=F&0b10000000|0b00010000;";
+                        elem = "c=1;n=h=0;";
                     break;
                     case "CPL":    
                         /* 0x2F CPL */
-                        elem = "A=~A;F=F|0b01100000;";
+                        elem = "A=A^0xFF;n=h=1;";
                     break;    
                     case "RET":  
                         /* 0xC9 RET */
