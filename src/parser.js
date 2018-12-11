@@ -543,10 +543,6 @@
                         /* 0x00 NOP */
                         elem = "";
                     break;
-                    case "RET":  
-                        /* 0xC9 RET */
-                        elem = "PC=addressSpace.read(SP+1)<<8|addressSpace.read(SP);SP=(SP+2)%0x010000;";
-                    break;
                     case "DAA":
                         /* 0x27 DAA */
                         // if(FN){
@@ -586,7 +582,7 @@
                     break;
                     case "CCF":    
                         /* 0x3F CCF */
-                        elem = "F=F&0b10010000&(1-(F>>4&0b00000001)<<4|F&0b11100000);";
+                        elem = "F=!(F>>4&0b00000001)<<4|F&0b10000000;";
                     break;
                     case "SCF":    
                         /* 0x37 SCF */
@@ -596,9 +592,13 @@
                         /* 0x2F CPL */
                         elem = "A=~A;F=F|0b01100000;";
                     break;    
+                    case "RET":  
+                        /* 0xC9 RET */
+                        elem = "PC=addressSpace.read(SP+1)<<8|addressSpace.read(SP);SP=(SP+2)%0x010000;";
+                    break;
                     case "RETI":
                         /* 0xD9 RETI */
-                        elem = "DELAYED_JUMP(StackPopWord());IME=1;";
+                        elem = "IME=true;PC=addressSpace.read(SP+1)<<8|addressSpace.read(SP);SP=(SP+2)%0x010000;";
                     break;
                     case "DI":   
                         /* 0xF3 DI */
@@ -606,7 +606,35 @@
                     break;
                     case "EI":   
                         /* 0xFB EI */
-                        elem = "IME=true;interrupt();";   
+                        // this.executeInt = function(){
+                        //     var intvector = this.io8bit[15];
+
+                        //     if (intvector&1  && this.intEnable&1  && this.z80.interrupt(64)) intvector&=~1;
+                        //     if (intvector&2  && this.intEnable&2  && this.z80.interrupt(72)) intvector&=~2;
+                        //     if (intvector&4  && this.intEnable&4  && this.z80.interrupt(80)) intvector&=~4;
+                        //     if (intvector&8  && this.intEnable&8  && this.z80.interrupt(88)) intvector&=~8;
+                        //     if (intvector&16 && this.intEnable&16 && this.z80.interrupt(96)) intvector&=~16;
+
+                        //     this.io8bit[15] = intvector;
+                        //  }
+                      
+                        // function interrupt(address){
+                        //     if(IME){
+                        //        IME=false;
+
+                        // address = address|0;
+                        // RSP = RSP-2|0;
+                        // putAddress16(RSP, PC);
+                        // PC = address;
+                        // RSP = (RSP + 0x10000|0) % 0x10000|0;
+                  
+                        //        call(address);
+                        //        stopped=false;
+                        //        return 1;
+                        //     }
+                        //     return 0;
+                        //  }
+                        elem = "IME=true;();";   
                     break;
                     case "HALT": 
                         /* 0x76 HALT */
