@@ -38,8 +38,39 @@ FFFF-FFFF IE register, Interrupt enable register, interrapt switch
 this.romBanks = 2*Math.pow(2,this.rom8bit[0x0148]);
 
 */
+    let SP = 0xFFFE; // stack pointer
+
+    let RAM = new Uint8Array(0xFFFF);
+
 
     return {
+        decSP: function() {if(--SP<0)SP=0xFFFF;},
+        incSP: function() {if(++SP>0xFFFF)SP=0;},
+        setSP: function(value) {SP=value;},
+        getSP: function() {return SP;},
+        pop: function() {
+            return;
+        },
+        push16: function(word) {
+            SP=SP-2;
+            write16(SP, word);
+            SP=(SP+0x010000)%0x010000;
+        },
+        pop16: function() {
+            return  read(SP+1)<<8|read(SP);SP=(SP+2)%0x010000;
+        },
+        readIO8bit: function(address) {
+
+        },
+        writeIO8bit: function(address, byte) {
+
+        },
+        read16: function(address) {
+
+        },
+        write16: function(address, byte) {
+
+        },
         read: function(address) {
             switch (address & 0xF000) {
                 case 0x0000:
