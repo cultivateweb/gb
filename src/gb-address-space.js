@@ -52,13 +52,10 @@ this.romBanks = 2*Math.pow(2,this.rom8bit[0x0148]);
     function getSP() { return SP; }
 
     function push(byte) {
-        
+        write(--SP, byte);
     }
 
     function pop() {
-
-        //var data = getAddress(SP + 1) << 8 | getAddress(SP); B = data >> 8; C = data & 0xFF; SP = SP + 2; 
-
         return read(SP++);
     }
 
