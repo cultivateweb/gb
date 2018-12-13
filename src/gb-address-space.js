@@ -38,81 +38,117 @@ FFFF-FFFF IE register, Interrupt enable register, interrapt switch
 this.romBanks = 2*Math.pow(2,this.rom8bit[0x0148]);
 
 */
-    let SP = 0xFFFE; // stack pointer
+
 
     let RAM = new Uint8Array(0xFFFF);
 
 
-    return {
-        decSP: function() {if(--SP<0)SP=0xFFFF;},
-        incSP: function() {if(++SP>0xFFFF)SP=0;},
-        setSP: function(value) {SP=value;},
-        getSP: function() {return SP;},
-        pop: function() {
-            return;
-        },
-        push16: function(word) {
-            SP=SP-2;
-            write16(SP, word);
-            SP=(SP+0x010000)%0x010000;
-        },
-        pop16: function() {
-            return  read(SP+1)<<8|read(SP);SP=(SP+2)%0x010000;
-        },
-        readIO8bit: function(address) {
+    let SP = 0xFFFE; // stack pointer
 
-        },
-        writeIO8bit: function(address, byte) {
+    function decSP() { if (--SP < 0x0000) SP = 0xFFFF; }
+    function incSP() { if (++SP > 0xFFFF) SP = 0x0000; }
 
-        },
-        read16: function(address) {
+    function setSP(value) { SP = value; };
+    function getSP() { return SP; }
 
-        },
-        write16: function(address, byte) {
+    function push(byte) {
+        
+    }
 
-        },
-        read: function(address) {
-            switch (address & 0xF000) {
-                case 0x0000:
-                case 0x1000:
-                case 0x2000:
-                case 0x3000:
-                case 0x4000:
-                case 0x5000:
-                case 0x6000:
-                case 0x7000:
-                    cartridge.read(address);
-                break;
-                case 0x8000:
-                case 0x9000:
-                    // video.read(address);
-                break;
+    function pop() {
+
+        //var data = getAddress(SP + 1) << 8 | getAddress(SP); B = data >> 8; C = data & 0xFF; SP = SP + 2; 
+
+        return read(SP++);
+    }
+
+    function push16(word) {
+        write16(SP -= 2, word);
+        SP = (SP + 0x010000) % 0x010000;
+    }
+
+    function pop16() {
+        let word = read16(SP);
+        SP = (SP + 2) % 0x10000;
+        return  word;
+    }
+
+    function readIO8bit(address) {
+
+    }
+
+    function writeIO8bit(address, byte) {
+
+    }
+
+    function read16(address) { 
+        return read(address + 1) << 8 | read(address); 
+    }
+
+    function write16(address, word) {
+        write(address,     word & 0xFF);
+        write(address + 1, word >>> 8);
+    }
+
+    function read(address) {
+        switch (address & 0xF000) {
+            case 0x0000:
+            case 0x1000:
+            case 0x2000:
+            case 0x3000:
+            case 0x4000:
+            case 0x5000:
+            case 0x6000:
+            case 0x7000:
+                cartridge.read(address);
+            break;
+            case 0x8000:
+            case 0x9000:
+                // video.read(address);
+            break;
 
 
-                // A000-BFFF Switchable RAM bank, External RAM 8Kb
-                // C000-DFFF Internal RAM 1, Work RAM 8Kb    
-                // E000-FDFF Echo of Internal RAM 1 
-                // FE00-FE9F OAM, sprite attribute table
-                // FEA0-FEFF not used
-                // FF00-FF00 I/O ports
-                //         --011111 d-pad (3-down 2-up 1-left 1-right)
-                //         --101111 3-start 2-select 1-b 1-a
-                // FF01-FF4B I/O ports
-                // FF4C-FF7F not used 
-                // FF80-FFFE Internal RAM 2, High RAM
-                // FFFF-FFFF IE register, Interrupt enable register, interrapt switch
-                
-            }
-
-            return 0;
-        },
-        write: function(address, byte) {
-            switch (address & 0xF000) {
-                case 0x8000:
-                case 0x9000:
-                    // video.write(address, byte);
-                break;
-            }
+            // A000-BFFF Switchable RAM bank, External RAM 8Kb
+            // C000-DFFF Internal RAM 1, Work RAM 8Kb    
+            // E000-FDFF Echo of Internal RAM 1 
+            // FE00-FE9F OAM, sprite attribute table
+            // FEA0-FEFF not used
+            // FF00-FF00 I/O ports
+            //         --011111 d-pad (3-down 2-up 1-left 1-right)
+            //         --101111 3-start 2-select 1-b 1-a
+            // FF01-FF4B I/O ports
+            // FF4C-FF7F not used 
+            // FF80-FFFE Internal RAM 2, High RAM
+            // FFFF-FFFF IE register, Interrupt enable register, interrapt switch
+            
         }
+
+        return 0;
+    }
+
+    function write(address, byte) {
+        switch (address & 0xF000) {
+            case 0x8000:
+            case 0x9000:
+                // video.write(address, byte);
+            break;
+        }
+    }
+
+    return {
+        decSP:       decSP,
+        incSP:       incSP,
+        setSP:       setSP,
+        getSP:       getSP,
+        push:        push,
+        pop:         pop,
+        push16:      push16,
+        pop16:       pop16,
+        readIO8bit:  readIO8bit,
+        writeIO8bit: writeIO8bit,
+        read16:      read16,
+        write16:     write16,
+        read:        read,
+        write:       write
     };
 }

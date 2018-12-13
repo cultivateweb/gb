@@ -197,7 +197,7 @@
                                     elem = params[0]+"=addressSpace.read(0xFF00|C);";
                                 } else if (params[1] == "(a16)") {
                                     /* 0xFA LD A,(a16) */
-                                    elem = params[0]+"=addressSpace.read(addressSpace.read(PC+2)<<8|addressSpace.read(PC+1));";
+                                    elem = params[0]+"=addressSpace.read(addressSpace.read16(PC+1));";
                                 }
                             } else if (REGISTERS_8_BIT.indexOf(params[1]) != -1) {
                                 if (REGISTERS_16_BIT.indexOf(params[0].replace("(", "").replace(")", "")) != -1) {
@@ -223,15 +223,17 @@
                                     elem = "addressSpace.write(0xFF00|C,"+params[1]+");";
                                 } else if (params[0] == "(a16)") {
                                     /* 0xEA LD (a16),A */
-                                    elem = "addressSpace.write(addressSpace.read(PC+2)<<8|addressSpace.read(PC+1),"+params[1]+");";
+                                    elem = "addressSpace.write(addressSpace.read16(PC+1),"+params[1]+");";
                                 }
                             } else if (params[1] == "d16") {
                                 /* 0x01 LD BC,d16 */
                                 /* 0x11 LD DE,d16 */
                                 /* 0x21 LD HL,d16 */
-                                /* 0x31 LD SP,d16 */
                                 elem = _mnem[1][1]+"=addressSpace.read(PC+1);"+_mnem[1][0]+"=addressSpace.read(PC+2);";
-                            } else if (_mnem[1] == "HL,SP+r8") {                      
+                            } else if (_mnem[1] == "SP,d16") {
+                                /* 0x31 LD SP,d16 */
+                                elem = "addressSpace.setSP(addressSpace.read16(PC+1));";
+                            } else if (_mnem[1] == "HL,SP+r8") {
                                 /* 0xF8 LD HL,SP+r8 */
                                 elem = "let SP=addressSpace.getSP();let v=addressSpace.read(PC+1);v=v<0x80?v:(v-0x0100);let s=SP+v;if(v<0)v+=65536;n=0;c=s>65535;h=(SP%4096)+(v%4096)>4095;let HL=s%65536;H=HL>>>8;L=HL&0xFF;z=0;";
                             } else if (_mnem[1] == "SP,HL") {
@@ -239,7 +241,7 @@
                                 elem = "addressSpace.setSP(H<<8|L);";
                             } else if (_mnem[1] == "(a16),SP") {
                                 /* 0x08 LD (a16),SP */
-                                elem = "let SP=addressSpace.getSP();let addr=addressSpace.read(PC+2)<<8|addressSpace.read(PC+1);addressSpace.write(addr,SP&0xFF);addressSpace.write(addr+1,SP>>>8);";
+                                elem = "addressSpace.write16(addressSpace.read16(PC+1),addressSpace.getSP());";
                             } else if (_mnem[1] == "(HL),d8") {
                                 /* 0x36 LD (HL),d8 */
                                 elem = "addressSpace.write(H<<8|L,addressSpace.read(PC+1));";
@@ -463,7 +465,7 @@
                             break;
                             case "a16":
                                 /* 0xC3 JP a16 */
-                                elem = "PC=addressSpace.read(PC+2)<<8|addressSpace.read(PC+1);";
+                                elem = "PC=addressSpace.read16(PC+1);";
                             break;
                             case "Z,a16":
                                 /* 0xCA JP Z,a16 */
@@ -487,61 +489,36 @@
                         switch (_mnem[1]) {
                             case "NZ,a16":
                                 /* 0xC4 CALL NZ,a16 */
-                                elem = "if(z)cycle=12;else{SP=SP-2;addressSpace.write16(SP,PC+1);PC=addressSpace.read(PC+2)<<8|addressSpace.read(PC+1);SP=(SP+0x010000)%0x010000;}";
+                                elem = "if(z)cycle=12;else{addressSpace.write16(addressSpace.getSP()-2,PC+2);PC=addressSpace.read16(PC+1);addressSpace.setSP((SP+0x010000)%0x010000);}";
                             break;
                             case "Z,a16":
                                 /* 0xCC CALL Z,a16 */
-                                elem = "if(z){SP=SP-2;addressSpace.write16(SP,PC+1);PC=addressSpace.read(PC+2)<<8|addressSpace.read(PC+1);SP=(SP+0x010000)%0x010000;}else cycle=12;";
+                                elem = "if(z){addressSpace.write16(addressSpace.getSP()-2,PC+2);PC=addressSpace.read16(PC+1);addressSpace.setSP((SP+0x010000)%0x010000);}else cycle=12;";
                             break;
                             case "a16":
                                 /* 0xCD CALL a16 */
-                                elem = "SP=SP-2;addressSpace.write16(SP,PC+1);PC=addressSpace.read(PC+2)<<8|addressSpace.read(PC+1);SP=(SP+0x010000)%0x010000;";
+                                elem = "addressSpace.write16(addressSpace.getSP()-2,PC+2);PC=addressSpace.read16(PC+1);addressSpace.setSP((SP+0x010000)%0x010000);";
                             break;
                             case "NC,a16":
                                 /* 0xD4 CALL NC,a16 */
-                                elem = "if(c)cycle=12;else{SP=SP-2;addressSpace.write16(SP,PC+1);PC=addressSpace.read(PC+2)<<8|addressSpace.read(PC+1);SP=(SP+0x010000)%0x010000;}";
+                                elem = "if(c)cycle=12;else{addressSpace.write16(addressSpace.getSP()-2,PC+2);PC=addressSpace.read16(PC+1);addressSpace.setSP((SP+0x010000)%0x010000);}";
                             break;
                             case "C,a16":
                                 /* 0xDC CALL C,a16 */
-                                elem = "if(c){SP=SP-2;addressSpace.write16(SP,PC+1);PC=addressSpace.read(PC+2)<<8|addressSpace.read(PC+1);SP=(SP+0x010000)%0x010000;}else cycle=12;";
+                                elem = "if(c){addressSpace.write16(addressSpace.getSP()-2,PC+2);PC=addressSpace.read16(PC+1);addressSpace.setSP((SP+0x010000)%0x010000);}else cycle=12;";
                             break;
                         }
                     break;     
                     case "RST":
-                        switch (_mnem[1]) {
-                            case "00H":
-                                /* 0xC7 RST 00H */
-                                elem = "addressSpace.push16(PC+1);PC=0;";
-                            break;
-                            case "08H":
-                                /* 0xCF RST 08H */
-                                elem = "addressSpace.push16(PC+1);PC=8;";
-                            break;
-                            case "10H":
-                                /* 0xD7 RST 10H */
-                                elem = "addressSpace.push16(PC+1);PC=16;";
-                            break;
-                            case "18H":
-                                /* 0xDF RST 18H */
-                                elem = "addressSpace.push16(PC+1);PC=24;";
-                            break;
-                            case "20H":
-                                /* 0xE7 RST 20H */
-                                elem = "addressSpace.push16(PC+1);PC=32;";
-                            break;
-                            case "28H":
-                                /* 0xEF RST 28H */
-                                elem = "addressSpace.push16(PC+1);PC=40;";
-                            break;
-                            case "30H":
-                                /* 0xF7 RST 30H */
-                                elem = "addressSpace.push16(PC+1);PC=48;";
-                            break;
-                            case "38H":
-                                /* 0xFF RST 38H */
-                                elem = "addressSpace.push16(PC+1);PC=56;";
-                            break;
-                        }
+                        /* 0xC7 RST 00H */
+                        /* 0xCF RST 08H */
+                        /* 0xD7 RST 10H */
+                        /* 0xDF RST 18H */
+                        /* 0xE7 RST 20H */
+                        /* 0xEF RST 28H */
+                        /* 0xF7 RST 30H */
+                        /* 0xFF RST 38H */
+                        elem = "addressSpace.push16(PC+1);PC=0x"+_mnem[1].replace("H","")+";";
                     break;             
                     case "PREFIX": 
                         /* 0xCB PREFIX CB */
@@ -610,13 +587,13 @@
                     case "EI":   
                         /* 0xFB EI */
                         elem = `IME=true;
-                            let intvector = addressSpace.readIO8bit(15);
-                            if (intvector & 0x01 && intEnable & 0x01 && interrupt(64)) intvector &= ~0x01;
-                            if (intvector & 0x02 && intEnable & 0x02 && interrupt(72)) intvector &= ~0x02;
-                            if (intvector & 0x04 && intEnable & 0x04 && interrupt(80)) intvector &= ~0x04;
-                            if (intvector & 0x08 && intEnable & 0x08 && interrupt(88)) intvector &= ~0x08;
-                            if (intvector & 0x10 && intEnable & 0x10 && interrupt(96)) intvector &= ~0x10;
-                            addressSpace.writeIO8bit(15, intvector);`;   
+                                                 let intvector = addressSpace.readIO8bit(15);
+                                                 if (intvector & 0x01 && intEnable & 0x01 && interrupt(64)) intvector &= ~0x01;
+                                                 if (intvector & 0x02 && intEnable & 0x02 && interrupt(72)) intvector &= ~0x02;
+                                                 if (intvector & 0x04 && intEnable & 0x04 && interrupt(80)) intvector &= ~0x04;
+                                                 if (intvector & 0x08 && intEnable & 0x08 && interrupt(88)) intvector &= ~0x08;
+                                                 if (intvector & 0x10 && intEnable & 0x10 && interrupt(96)) intvector &= ~0x10;
+                                                 addressSpace.writeIO8bit(15, intvector);`;   
                     break;
                     case "HALT": 
                         /* 0x76 HALT */
