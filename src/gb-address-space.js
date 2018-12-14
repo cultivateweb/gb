@@ -132,20 +132,5 @@ this.romBanks = 2*Math.pow(2,this.rom8bit[0x0148]);
         }
     }
 
-    return {
-        decSP:       decSP,
-        incSP:       incSP,
-        setSP:       setSP,
-        getSP:       getSP,
-        push:        push,
-        pop:         pop,
-        push16:      push16,
-        pop16:       pop16,
-        readIO8bit:  readIO8bit,
-        writeIO8bit: writeIO8bit,
-        read16:      read16,
-        write16:     write16,
-        read:        read,
-        write:       write
-    };
+    return {decSP, incSP, setSP, getSP, push, pop, push16, pop16, readIO8bit, writeIO8bit, read16, write16, read, write};
 }
