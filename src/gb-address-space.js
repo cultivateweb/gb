@@ -41,50 +41,13 @@ this.romBanks = 2*Math.pow(2,this.rom8bit[0x0148]);
 
 
     let RAM = new Uint8Array(0xFFFF);
-
-
-    let SP = 0xFFFE; // stack pointer
-
-    function decSP() { if (--SP < 0x0000) SP = 0xFFFF; }
-    function incSP() { if (++SP > 0xFFFF) SP = 0x0000; }
-
-    function setSP(value) { SP = value; };
-    function getSP() { return SP; }
-
-    function push(byte) {
-        write(--SP, byte);
-    }
-
-    function pop() {
-        return read(SP++);
-    }
-
-    function push16(word) {
-        write16(SP -= 2, word);
-        SP = (SP + 0x010000) % 0x010000;
-    }
-
-    function pop16() {
-        let word = read16(SP);
-        SP = (SP + 2) % 0x10000;
-        return  word;
-    }
-
+ 
     function readIO8bit(address) {
 
     }
 
     function writeIO8bit(address, byte) {
 
-    }
-
-    function read16(address) { 
-        return read(address + 1) << 8 | read(address); 
-    }
-
-    function write16(address, word) {
-        write(address,     word & 0xFF);
-        write(address + 1, word >>> 8);
     }
 
     function read(address) {
@@ -132,5 +95,5 @@ this.romBanks = 2*Math.pow(2,this.rom8bit[0x0148]);
         }
     }
 
-    return {decSP, incSP, setSP, getSP, push, pop, push16, pop16, readIO8bit, writeIO8bit, read16, write16, read, write};
+    return {readIO8bit, writeIO8bit, read, write};
 }
