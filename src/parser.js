@@ -23,8 +23,8 @@
     const HL = "H<<8|L";
     const fromHL = "addressSpace.read("+HL+")";
     const d8 = "addressSpace.read(PC+1)";
-    const a16 = "addressSpace.read("+d16+")";
     const d16 = "addressSpace.read16(PC+1)";
+    const a16 = "addressSpace.read("+d16+")";
     const SP = "addressSpace.getSP()";
 
     function parseCol(r, c, arr, nodes) {
@@ -44,6 +44,9 @@
             let _mnem = mnem.split(" ");
             if (_mnem.length > 1) {
                 let params = _mnem[1].split(",");
+
+                console.log(mnem, ": ", params[0]||"", params[1]||"");
+
                 switch (_mnem[0]) {
                     case "PUSH":
                         /* 0xC5 PUSH BC [1 16] */
@@ -326,7 +329,7 @@
                         }
                     break;    
                     case "SBC":    
-                        if (REGISTERS_8_BIT.indexOf(params[0]) != -1) {
+                        if (REGISTERS_8_BIT.indexOf(params[1]) != -1) {
                             /* 0x98 SBC A,B [1 4] z1hc */
                             /* 0x99 SBC A,C [1 4] z1hc */
                             /* 0x9A SBC A,D [1 4] z1hc */
@@ -335,12 +338,12 @@
                             /* 0x9D SBC A,L [1 4] z1hc */
                             /* 0x9F SBC A,A [1 4] z1hc */
                             elem = params[1];
-                        } else if (params[0] == "(HL)") {
+                        } else if (params[1] == "(HL)") {
                             /* 0x9E SBC A,(HL) [1 8] z1hc */
-                            elem = "let v="+HL;
-                        } else if (params[0] == "d8") {
+                            elem = HL;
+                        } else if (params[1] == "d8") {
                             /* 0xDE SBC A,d8 [2 8] z1hc */
-                            elem = "let v="+d8;
+                            elem = d8;
                         }
                         elem = "let v=" + elem + "+c;let d=A-v;z=!d;n=1;h=A%16-v%16<0;c=d<0;A=(d+0x0100)%0x0100;";
                     break;    
