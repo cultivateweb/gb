@@ -25,6 +25,7 @@
     const d8 = "read(PC+1)";
     const d16 = "read16(PC+1)";
     const a16 = "read("+d16+")";
+    const r8 = "let r8="+d8+";if(r8>127)r8=r8-256;";
 
     function parseCol(r, c, arr, nodes) {
         const opcode = "0x" + r.toString(16).toUpperCase() + c.toString(16).toUpperCase();
@@ -243,7 +244,7 @@
                                 elem = "SP="+d16+";";
                             } else if (_mnem[1] == "HL,SP+r8") {
                                 /* 0xF8 LD HL,SP+r8 [2 12] 00hc */
-                                elem = "let v="+d8+";v=v<0x80?v:(v-0x0100);let s=SP+v;if(v<0)v+=65536;n=0;c=s>65535;h=(SP%4096)+(v%4096)>4095;let HL=s%65536;H=HL>>>8;L=HL&0xFF;z=0;";
+                                elem = r8+"let s=SP+r8;if(r8<0)r8+=65536;n=0;c=s>65535;h=(SP%4096)+(r8%4096)>4095;let HL=s%65536;H=HL>>>8;L=HL&0xFF;z=0;";
                             } else if (_mnem[1] == "SP,HL") {
                                 /* 0xF9 LD SP,HL [1 8] */
                                 elem = "SP="+HL+";";
@@ -286,7 +287,7 @@
                                     elem = "let "+params[0]+"="+params[0][0]+"<<8|"+params[0][1]+";let s="+params[0]+"+SP;if(SP<0)SP+=65536;n=0;c=s>65535;h="+params[0]+"%4096+SP%4096>4095;"+params[0]+"=s%65536;";
                                 } else if (params[1] == "r8") {
                                     /* 0xE8 ADD SP,r8 [2 16] 00hc */
-                                    elem = "let v="+d8+";v=v<0x80?v:(v-0x0100);if(v<0)v=v+0x010000;let s=SP+v;n=0;c=s>255;h=SP%16+v%16>15;SP=s%256;z=0;";
+                                    elem = r8+"if(r8<0)r8=r8+0x010000;let s=SP+r8;n=0;c=s>255;h=SP%16+r8%16>15;SP=s%256;z=0;";
                                 }
                             }
                         }
@@ -450,23 +451,23 @@
                         switch (_mnem[1]) {
                             case "r8":
                                 /* 0x18 JR r8 [2 12] */
-                                elem = "let byte="+d8+";byte=byte<0x80?byte:(byte-0x0100);PC=PC+byte;";
+                                elem = r8+"PC=PC+r8;";
                             break;
                             case "NZ,r8":
                                 /* 0x20 JR NZ,r8 [2 12/8] */
-                                elem = "if(z)cycle=8;else{let byte="+d8+";byte=byte<0x80?byte:(byte-0x0100);PC=PC+byte;}";
+                                elem = "if(z)cycle=8;else{"+r8+"PC=PC+r8;}";
                             break;
                             case "Z,r8":
                                 /* 0x28 JR Z,r8 [2 12/8] */
-                                elem = "if(z){let byte="+d8+";byte=byte<0x80?byte:(byte-0x0100);PC=PC+byte;}else cycle=8;";
+                                elem = "if(z){"+r8+"PC=PC+r8;}else cycle=8;";
                             break;
                             case "NC,r8":
                                 /* 0x30 JR NC,r8 [2 12/8] */
-                                elem = "if(c)cycle=8;else{let byte="+d8+";byte=byte<0x80?byte:(byte-0x0100);PC=PC+byte;}";
+                                elem = "if(c)cycle=8;else{"+r8+"PC=PC+r8;}";
                             break;
                             case "C,r8":
                                 /* 0x38 JR C,r8 [2 12/8] */                            
-                                elem = "if(c){let byte="+d8+";byte=byte<0x80?byte:(byte-0x0100);PC=PC+byte;}else cycle=8;";
+                                elem = "if(c){"+r8+"PC=PC+r8;}else cycle=8;";
                             break;
                         }                        
                     break;   
@@ -540,7 +541,7 @@
                     case "LDH":    
                         if (_mnem[1] == "(a8),A") {
                             /* 0xE0 LDH (a8),A [2 12] */
-                            elem = "write(0xFF<<8|"+d8+",A);";
+                            elem = "write(0xFF00|"+d8+",A);";
                         } else if (_mnem[1] == "A,(a8)") {
                             /* 0xF0 LDH A,(a8) [2 12] */                            
                             elem = "A=read(0xFF00|"+d8+");";
