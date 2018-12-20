@@ -1,7 +1,7 @@
-import {initGB89}         from './GB89.js';
-import {initLR35902}      from './LR35902.js';
-import {initAddressSpace} from './gb-address-space.js';
-import {initCartridge}    from './gb-cartridge.js';
+import {init as initGB89}         from './GB89.js';
+import {init as initLR35902}      from './LR35902.js';
+import {init as initAddressSpace} from './gb-address-space.js';
+import {init as initCartridge}    from './gb-cartridge.js';
 
 function initGB(buffer) {
     let cartridge;
