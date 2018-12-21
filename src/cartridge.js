@@ -237,8 +237,8 @@ export function init(rom) {
 
     // Game title 0x0134 - 0x0142
     let title = "";
-    for (let p = 0x0134; p < 0x0143 && rom[p]; p++) 
-        title += String.fromCharCode(rom[p]);
+    for (let b = 0x0134; b < 0x0143 && rom[b]; b++) 
+        title += String.fromCharCode(rom[b]);
 
     let loaded = true;
 
@@ -251,14 +251,22 @@ export function init(rom) {
             break;
         }
 
+    console.log("cartridge GRAPHIC loaded="+loaded);
+
     //Checking header checksum. 
     //Real Gameboy won't run if it's invalid. 
     //We are checking just to be sure that input file is Gameboy rom
     if (loaded) {
         let checksum = 0;
-        for (let b = 0x134; b < 0x14D; b++) checksum = checksum - rom[b] - 1; 
-        if (checksum != rom[0x14D]) loaded = false;
+        for (let b = 0x0134; b < 0x014D; b++) {
+            checksum = checksum - rom[b] - 1; 
+            console.log((b).toString(16)+"="+rom[b]);
+        }
+        if (checksum != rom[0x014D]) loaded = false;
+        console.log("checksum="+checksum,rom[0x014D]);
     }
+
+    console.log("cartridge checksum loaded="+loaded);
 
     let colorGB         = rom[0x0143] == 0x80 || rom[0x0143] == 0xC0;
     let superGB         = rom[0x0146] == 0x03;        
@@ -272,6 +280,8 @@ export function init(rom) {
     let rumbleSupport   = false;    
     let name            = "Unknown";    
     let mbc             = { read: function() { return 0xFF; }, write: function() { } };
+
+    console.log((rom[0x0147]).toString(16));
 
     switch(rom[0x0147]) {
         case 0x00: 
@@ -391,6 +401,8 @@ export function init(rom) {
             mbc = initMBC1(rom, romSize, ramBanks, ramSize); 
         break;
     }
+
+    console.log(name);
 
     let read  = mbc.read;
     let write = mbc.write;

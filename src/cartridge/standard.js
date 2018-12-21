@@ -3,7 +3,8 @@
  * The ROM is directly mapped to memory at 0000-7FFFh. Optionally up to 8KByte of RAM could be connected at A000-BFFF,
  * even though that could require a tiny MBC-like circuit, but no real MBC chip. */
 export function init(rom, ramBanks) {
-    console.log("init standart");
+    console.log("init standard");
+
     return {
         read: function(address) {
             switch (address & 0xF000) {
