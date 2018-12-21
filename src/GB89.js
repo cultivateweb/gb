@@ -42,13 +42,12 @@ const BIOS = [
     1 	LCDC
     0 	V-Blank
 
-
-
-
     PPU
-
 */
-export function initGB89(CPU) {
+
+export function init(CPU) {
+    console.log("init GB");
+
     return {
         run: function() {
             CPU.run();

@@ -1,9 +1,11 @@
-import {init as initGB89}         from './GB89.js';
-import {init as initLR35902}      from './LR35902.js';
-import {init as initAddressSpace} from './gb-address-space.js';
-import {init as initCartridge}    from './gb-cartridge.js';
+import { init as initGB89         } from './GB89.js';
+import { init as initLR35902      } from './LR35902.js';
+import { init as initAddressSpace } from './address-space.js';
+import { init as initCartridge    } from './cartridge.js';
 
-function initGB(buffer) {
+function init(buffer) {
+    console.log("init");
+
     let cartridge;
     let gb = initGB89(
         initLR35902(
@@ -14,13 +16,16 @@ function initGB(buffer) {
             )
         )
     );
+
+    //console.log(cartridge);
+
     document.querySelector("h1").innerHTML += " - " + cartridge.title;
     console.log("loaded: " + cartridge.title);
     return gb;
 }
 
 fetch(new Request("tetris.gb")).then(response => response.arrayBuffer())
-                               .then(buffer   => initGB(buffer).run());
+                               .then(buffer   => init(buffer).run());
 
 // const pre = document.querySelector("pre");
 

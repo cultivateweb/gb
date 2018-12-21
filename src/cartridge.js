@@ -1,4 +1,5 @@
 import {init as initStandard} from './cartridge/standard.js';
+import {init as initMMM01} from './cartridge/mmm01.js';
 import {init as initMBC1} from './cartridge/mbc1.js';
 import {init as initMBC2} from './cartridge/mbc2.js';
 import {init as initMBC3} from './cartridge/mbc3.js';
@@ -19,42 +20,6 @@ const NINTENDO_GRAPHIC = [
     0xDC, 0xCC, 0x6E, 0xE6, 0xDD, 0xDD, 0xD9, 0x99,
     0xBB, 0xBB, 0x67, 0x63, 0x6E, 0x0E, 0xEC, 0xCC,
     0xDD, 0xDC, 0x99, 0x9F, 0xBB, 0xB9, 0x33, 0x3E];
-
-// const MMC_ROMONLY = 0x00;
-// const MMC_MBC1    = 0x01;
-// const MMC_MBC2    = 0x02;
-// const MMC_MBC3    = 0x03;
-// const MMC_MBC5    = 0x04;
-// const MMC_MMM01   = 0x05;
-// const MMC_UNKNOWN = 0x06;
-
-// const CARTRIDGE_TYPES = {
-//     0x00: { name: "ROM ONLY",                  MMCType: MMC_ROMONLY                                         },
-//     0x01: { name: "ROM+MBC1",                  MMCType: MMC_MBC1                                            },
-//     0x02: { name: "ROM+MBC1+RAM",              MMCType: MMC_MBC1                                            },
-//     0x03: { name: "ROM+MBC1+RAM+BATT",         MMCType: MMC_MBC1, BatterySupport: true                      },
-//     0x05: { name: "ROM+MBC2",                  MMCType: MMC_MBC2, RAMSize: 512                              },
-//     0x06: { name: "ROM+MBC2+BATT",             MMCType: MMC_MBC2, BatterySupport: true, RAMSize: 512        },
-//     0x08: { name: "ROM+RAM",                   MMCType: MMC_ROMONLY                                         },
-//     0x09: { name: "ROM+RAM+BATT",              MMCType: MMC_ROMONLY, BatterySupport: true                   },
-//     0x0B: { name: "ROM+MMM01",                 MMCType: MMC_MMM01                                           },
-//     0x0C: { name: "ROM+MMM01+SRAM",            MMCType: MMC_MMM01                                           },
-//     0x0D: { name: "ROM+MMM01+SRAM+BATT",       MMCType: MMC_MMM01, BatterySupport: true                     },
-//     0x0F: { name: "ROM+MBC3+TIMER+BATT",       MMCType: MMC_MBC3,  BatterySupport: true,  RTCSupport: true  },
-//     0x10: { name: "ROM+MBC3+TIMER+RAM+BATT",   MMCType: MMC_MBC3,  BatterySupport: true,  RTCSupport: true  },
-//     0x11: { name: "ROM+MBC3",                  MMCType: MMC_MBC3                                            },
-//     0x12: { name: "ROM+MBC3+RAM",              MMCType: MMC_MBC3                                            },
-//     0x13: { name: "ROM+MBC3+RAM+BATT",         MMCType: MMC_MBC3, BatterySupport: true                      },
-//     0x19: { name: "ROM+MBC5",                  MMCType: MMC_MBC5                                            },
-//     0x1A: { name: "ROM+MBC5+RAM",              MMCType: MMC_MBC5                                            },
-//     0x1B: { name: "ROM+MBC5+RAM+BATT",         MMCType: MMC_MBC5, BatterySupport: true                      },
-//     0x1C: { name: "ROM+MBC5+RUMBLE",           MMCType: MMC_MBC5, RumbleSupport: true                       },
-//     0x1D: { name: "ROM+MBC5+RUMBLE+SRAM",      MMCType: MMC_MBC5, RumbleSupport: true                       },
-//     0x1E: { name: "ROM+MBC5+RUMBLE+SRAM+BATT", MMCType: MMC_MBC5, BatterySupport: true, RumbleSupport: true },
-//     0x1F: { name: "Pocket Camera"                                                                           },
-//     0xFD: { name: "Bandai TAMA5"                                                                            },
-//     0xFE: { name: "Hudson HuC-3",              MMCType: MMC_MBC1                                            },
-//     0xFF: { name: "Hudson HuC-1",              MMCType: MMC_MBC1                                            }};
 
 const NEW_LICENSES = {
     0x00: "None",
@@ -266,108 +231,170 @@ const OLD_LICENSES = {
     0xDD: "NCS",
     0xE8: "Asmik",
     0xF0: "Awave"};
-    
 
+export function init(rom) {
+    console.log("init cartridge");
 
-export function init(ROM) {
+    // Game title 0x0134 - 0x0142
+    let title = "";
+    for (let p = 0x0134; p < 0x0143 && rom[p]; p++) 
+        title += String.fromCharCode(rom[p]);
 
-    function getTitle() {
-        let title = "";
-        for (let p = 0x0134; p < 0x0143 && ROM[p]; p++) title += String.fromCharCode(ROM[p]);
-        return title;
+    let loaded = true;
+
+    //Checking j scrolling graphic. 
+    //Real Gameboy won't run if it's invalid. 
+    //We are checking just to be sure that input file is Gameboy rom
+    for (let b1 = 0, b2 = 0x0104; b1 < NINTENDO_GRAPHIC.length; b1++, b2++)
+        if (NINTENDO_GRAPHIC[b1] != rom[b2]) {
+            loaded = false;
+            break;
+        }
+
+    //Checking header checksum. 
+    //Real Gameboy won't run if it's invalid. 
+    //We are checking just to be sure that input file is Gameboy rom
+    if (loaded) {
+        let checksum = 0;
+        for (let b = 0x134; b < 0x14D; b++) checksum = checksum - rom[b] - 1; 
+        if (checksum != rom[0x14D]) loaded = false;
     }
 
-    // function check(ROM) {
-    //     //Checking j scrolling graphic. 
-    //     //Real Gameboy won't run if it's invalid. We are checking just to be sure that input file is Gameboy ROM
-    //     for (let b = 0; b < NINTENDO_GRAPHIC.length; b++)
-    //         if (NINTENDO_GRAPHIC[b] != ROM[b + 0x0104])
-    //             return false;
-    
-    //     //Checking header checksum. 
-    //     //Real Gameboy won't run if it's invalid. We are checking just to be sure that input file is Gameboy ROM
-    //     let checksum = 0;
-    //     for (let b = 0x134; b < 0x14D; b++) checksum = checksum - ROM[b] - 1; 
-    //     if (checksum != ROM[0x14D]) return false;
-    //     return true;
-    // }
+    let colorGB         = rom[0x0143] == 0x80 || rom[0x0143] == 0xC0;
+    let superGB         = rom[0x0146] == 0x03;        
+    let newLicense      = NEW_LICENSES[(rom[0x0144] & 0xF0) | (rom[0x0145] & 0x0F)] || "Unknown";
+    let romSize         = ROM_SIZES[rom[0x0148]];
+    let ramSize         = RAM_SIZES[rom[0x0149]];
+    let destinationCode = DESTINATION_CODES[rom[0x14A]] || "Unknown";
+    let oldLicense      = OLD_LICENSES[rom[0x014B]] || "Unknown";
+    let batterySupport  = false;
+    let rtcSupport      = false;
+    let rumbleSupport   = false;    
+    let name            = "Unknown";    
+    let mbc             = { read: function() { return 0xFF; }, write: function() { } };
 
-    //let cartridgeType = CARTRIDGE_TYPES[ROM[0x147]] || {name: "Unknown"};
-
-
-
-    let colorGB = ROM[0x0143] == 0x80 || ROM[0x0143] == 0xC0;
-    let superGB = ROM[0x0146] == 0x03;        
-    let newLicense = NEW_LICENSES[(ROM[0x0144] & 0xF0) | (ROM[0x0145] & 0x0F)] || "Unknown";
-    let destinationCode = DESTINATION_CODES[ROM[0x14A]] || "Unknown";
-    let oldLicense = OLD_LICENSES[ROM[0x014B]] || "Unknown";
-
-    let MBC;
-    switch(ROM[0x0147]) {
-        case 0x00:
-        case 0x08:
-        case 0x09:
-            MBC = initStandard(ROM, RAMBanks);
+    switch(rom[0x0147]) {
+        case 0x00: 
+            name = "ROM ONLY";
+            mbc = initStandard(rom, ramBanks); 
         break;
-
-        case 0x01:
-        case 0x02:
-        case 0x03:
-        case 0xFE:
-        case 0xFF:
-            MBC = initMBC1(ROM, ROM_SIZES[ROM[0x0148]], RAMBanks, RAM_SIZES[ROM[0x0149]]);
+        case 0x01: 
+            name = "ROM+MBC1";
+            mbc = initMBC1(rom, romSize, ramBanks, ramSize); 
         break;
-
-        case 0x05:
-        case 0x06:
-            MBC = initMBC2(ROM, ROM_SIZES[ROM[0x0148]], RAMBanks, 512);
+        case 0x02: 
+            name = "ROM+MBC1+RAM";
+            mbc = initMBC1(rom, romSize, ramBanks, ramSize); 
         break;
-
-        case 0x0F:
-        case 0x10:
-        case 0x11:
-        case 0x12:
-        case 0x13:
-            MBC = initMBC3(ROM, ROM_SIZES[ROM[0x0148]], RAMBanks, RAM_SIZES[ROM[0x0149]]);
+        case 0x03: 
+            name = "ROM+MBC1+RAM+BATT";
+            batterySupport = true;
+            mbc = initMBC1(rom, romSize, ramBanks, ramSize); 
         break;
-
-        case 0x19:
-        case 0x1A:
-        case 0x1B:
-        case 0x1C:
-        case 0x1D:
-        case 0x1E:
-            MBC = initMBC5(ROM, ROM_SIZES[ROM[0x0148]], RAMBanks, RAM_SIZES[ROM[0x0149]]);
+        case 0x05: 
+            name = "ROM+MBC2";
+            mbc = initMBC2(rom, romSize, ramBanks); 
         break;
-
-        case 0x0B:
-        case 0x0C:
-        case 0x0D:
-            MBC = initMMM01(ROM, ROM_SIZES[ROM[0x0148]], RAMBanks, RAM_SIZES[ROM[0x0149]]);
+        case 0x06: 
+            name = "ROM+MBC2+BATT";
+            batterySupport = true;
+            mbc = initMBC2(rom, romSize, ramBanks); 
         break;
-
-        default: 
-            MBC = {
-                read: function(address) { return 0xFF; },
-                write: function(address, byte) { }
-            };
+        case 0x08: 
+            name = "ROM+RAM";
+            mbc = initStandard(rom, ramBanks); 
+        break;
+        case 0x09: 
+            name = "ROM+RAM+BATT";
+            batterySupport = true;
+            mbc = initStandard(rom, ramBanks); 
+        break;
+        case 0x0B: 
+            name = "ROM+MMM01";
+            mbc = initMMM01(rom, romSize, ramBanks, ramSize); 
+        break;
+        case 0x0C: 
+            name = "ROM+MMM01+SRAM";
+            mbc = initMMM01(rom, romSize, ramBanks, ramSize); 
+        break;
+        case 0x0D: 
+            name = "ROM+MMM01+SRAM+BATT";
+            batterySupport = true;
+            mbc = initMMM01(rom, romSize, ramBanks, ramSize); 
+        break;
+        case 0x0F: 
+            name = "ROM+MBC3+TIMER+BATT";
+            batterySupport = true;
+            rtcSupport = true;
+            mbc = initMBC3(rom, romSize, ramBanks, ramSize); 
+        break;
+        case 0x10: 
+            name = "ROM+MBC3+TIMER+RAM+BATT";
+            batterySupport = true;
+            rtcSupport = true;
+            mbc = initMBC3(rom, romSize, ramBanks, ramSize); 
+        break;
+        case 0x11: 
+            name = "ROM+MBC3";
+            mbc = initMBC3(rom, romSize, ramBanks, ramSize); 
+        break;
+        case 0x12: 
+            name = "ROM+MBC3+RAM";
+            mbc = initMBC3(rom, romSize, ramBanks, ramSize); 
+        break;
+        case 0x13: 
+            name = "ROM+MBC3+RAM+BATT";
+            batterySupport = true;
+            mbc = initMBC3(rom, romSize, ramBanks, ramSize); 
+        break;
+        case 0x19: 
+            name = "ROM+MBC5";
+            mbc = initMBC5(rom, romSize, ramBanks, ramSize); 
+        break;
+        case 0x1A: 
+            name = "ROM+MBC5+RAM";
+            mbc = initMBC5(rom, romSize, ramBanks, ramSize); 
+        break;
+        case 0x1B: 
+            name = "ROM+MBC5+RAM+BATT";
+            batterySupport = true;
+            mbc = initMBC5(rom, romSize, ramBanks, ramSize); 
+        break;
+        case 0x1C: 
+            name = "ROM+MBC5+RUMBLE";
+            rumbleSupport = true;
+            mbc = initMBC5(rom, romSize, ramBanks, ramSize);             
+        break;
+        case 0x1D: 
+            name = "ROM+MBC5+RUMBLE+SRAM";
+            rumbleSupport = true;
+            mbc = initMBC5(rom, romSize, ramBanks, ramSize);             
+        break;
+        case 0x1E: 
+            name = "ROM+MBC5+RUMBLE+SRAM+BATT";
+            rumbleSupport = true;
+            batterySupport = true;
+            mbc = initMBC5(rom, romSize, ramBanks, ramSize); 
+        break;
+        case 0x1F:
+            name = "Pocket Camera";
+        break;
+        case 0xFD:
+            name = "Bandai TAMA5";
+        break;
+        case 0xFE: 
+            name = "Hudson HuC-3";
+            mbc = initMBC1(rom, romSize, ramBanks, ramSize); 
+        break;
+        case 0xFF: 
+            name = "Hudson HuC-1";
+            mbc = initMBC1(rom, romSize, ramBanks, ramSize); 
+        break;
     }
 
+    let read  = mbc.read;
+    let write = mbc.write;
 
-    // let info = {
-    //     colorGB:         ROM[0x0143] == 0x80 || ROM[0x0143] == 0xC0,
-    //     superGB:         ROM[0x0146] == 0x03,
-    //     cartType:        cartType,
-    //     ROMSize:         ROM_SIZES[ROM[0x0148]],
-    //     RAMSize:         cartType.RAMSize || RAM_SIZES[ROM[0x0149]],
-    //     newLicense:      NEW_LICENSES[(ROM[0x0144] & 0xF0) | (ROM[0x0145] & 0x0F)] || "Unknown",
-    //     destinationCode: DESTINATION_CODES[ROM[0x14A]] || "Unknown",
-    //     oldLicense:      OLD_LICENSES[ROM[0x14B]] || "Unknown",
-    // };
-
-    return {
-        title: getTitle,
-        read: function(address) { return MBC.read(address); },
-        write: function(address, byte) { MBC.write(address, byte); }
-    };
+    return {loaded, title, name, batterySupport, rtcSupport, rumbleSupport, romSize, ramSize, 
+            colorGB, superGB, newLicense, destinationCode, oldLicense, read, write};
 }

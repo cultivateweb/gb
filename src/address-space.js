@@ -1,4 +1,7 @@
-export function initAddressSpace(cartridge) {
+
+export function init(cartridge) {
+    console.log("init address space");
+
     const ROM_BANK_SIZE = 0x4000, // 16Kb
           RAM_BANK_SIZE = 0x2000; //  8Kb
 /*

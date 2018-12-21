@@ -275,7 +275,9 @@
                                     /* 0x09 ADD HL,BC [1 8] -0hc */
                                     /* 0x19 ADD HL,DE [1 8] -0hc */
                                     /* 0x29 ADD HL,HL [1 8] -0hc */
-                                    elem = "let "+params[0]+"="+params[0][0]+"<<8|"+params[0][1]+";let "+params[1]+"="+params[1][0]+"<<8|"+params[1][1]+";let s="+params[0]+"+"+params[1]+";if("+params[1]+"<0)"+params[1]+"+=65536;n=0;c=s>65535;h="+params[0]+"%4096+"+params[1]+"%4096>4095;"+params[0]+"=s%65536;";
+                                    elem = "";
+                                    if (params[1]!="HL") elem = "let "+params[1]+"="+params[1][0]+"<<8|"+params[1][1]+";";
+                                    elem = "let "+params[0]+"="+params[0][0]+"<<8|"+params[0][1]+";"+elem+"let s="+params[0]+"+"+params[1]+";if("+params[1]+"<0)"+params[1]+"+=65536;n=0;c=s>65535;h="+params[0]+"%4096+"+params[1]+"%4096>4095;"+params[0]+"=s%65536;";
                                 } else if (params[1] == "SP") {
                                     /* 0x39 ADD HL,SP [1 8] -0hc */
                                     elem = "let "+params[0]+"="+params[0][0]+"<<8|"+params[0][1]+";let s="+params[0]+"+SP;if(SP<0)SP+=65536;n=0;c=s>65535;h="+params[0]+"%4096+SP%4096>4095;"+params[0]+"=s%65536;";
@@ -334,10 +336,10 @@
                             elem = params[1];
                         } else if (params[1] == "(HL)") {
                             /* 0x9E SBC A,(HL) [1 8] z1hc */
-                            elem = HL;
+                            elem = "read(H<<8|L)";
                         } else if (params[1] == "d8") {
                             /* 0xDE SBC A,d8 [2 8] z1hc */
-                            elem = d8;
+                            elem = "read(PC++)";
                         }
                         elem = "let value=" + elem + "+c;let d=A-value;z=!d;n=1;h=A%16-value%16<0;c=d<0;A=(d+0x0100)%0x0100;";
                     break;    
@@ -527,7 +529,7 @@
                         /* 0xEF RST 28H [1 16] */
                         /* 0xF7 RST 30H [1 16] */
                         /* 0xFF RST 38H [1 16] */
-                        elem = `PC+=1;write(--SP,PC>>>8);write(--SP,PC&0xFF);PC=0x{_mnem[1].replace("H","")};`;
+                        elem = `PC+=1;write(--SP,PC>>>8);write(--SP,PC&0xFF);PC=0x${_mnem[1].replace("H","")};`;
                     break;             
                     case "PREFIX": 
                         /* 0xCB PREFIX CB [1 4] */
