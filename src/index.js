@@ -7,6 +7,7 @@ function init(buffer) {
     console.log("init");
 
     let cartridge;
+
     let gb = initGB89(
         initLR35902(
             initAddressSpace(
@@ -16,8 +17,6 @@ function init(buffer) {
             )
         )
     );
-
-    //console.log(cartridge);
 
     document.querySelector("h1").innerHTML += " - " + cartridge.title;
     console.log("loaded: " + cartridge.title);

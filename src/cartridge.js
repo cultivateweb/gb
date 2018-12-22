@@ -9,8 +9,11 @@ import {init as initMBC5} from './cartridge/mbc5.js';
 // 32kB - 1MB for GB'89
 
 const ROM_SIZES = {0x00:2,0x01:4,0x02:8,0x03:16,0x04:32,0x05:64,0x06:128,0x52:72,0x53:80,0x54:96};
-const RAM_SIZES = [0,1,1,4,16];
+const RAM_SIZES = [0, 1, 1, 4, 16];
 const DESTINATION_CODES = {0x00:"Japanese",0x01:"Non-Japanese"};
+
+const ROM_BANK_SIZE = 0x4000; // 16Kb
+const RAM_BANK_SIZE = 0x2000; //  8Kb
 
 // 0x0104-0x0133
 const NINTENDO_GRAPHIC = [
@@ -258,12 +261,9 @@ export function init(rom) {
     //We are checking just to be sure that input file is Gameboy rom
     if (loaded) {
         let checksum = 0;
-        for (let b = 0x0134; b < 0x014D; b++) {
-            checksum = checksum - rom[b] - 1; 
-            console.log((b).toString(16)+"="+rom[b]);
-        }
+        for (let b = 0x0134; b < 0x014D; b++) checksum = checksum - rom[b] - 1; 
         if (checksum != rom[0x014D]) loaded = false;
-        console.log("checksum="+checksum,rom[0x014D]);
+        console.log("checksum", checksum,rom[0x014D]);
     }
 
     console.log("cartridge checksum loaded="+loaded);
@@ -281,7 +281,9 @@ export function init(rom) {
     let name            = "Unknown";    
     let mbc             = { read: function() { return 0xFF; }, write: function() { } };
 
-    console.log((rom[0x0147]).toString(16));
+    if (ramSize == 0) ramSize = 1;
+    if (rom[0x0147] == 0x05 || rom[0x0147] == 0x06) ramSize = 512;
+	let ramBanks = new Uint8Array(ramSize * RAM_BANK_SIZE);
 
     switch(rom[0x0147]) {
         case 0x00: 
